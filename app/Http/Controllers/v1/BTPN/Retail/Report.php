@@ -465,8 +465,6 @@ class Report extends \Service\Http\Controllers\v1\_Base
 	}
 
 	public function sales_summary(){
-
-
 		$this->validate_request();
 		$this->db = "ret";
 		$rules = [
