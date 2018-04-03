@@ -103,7 +103,6 @@ class _Base
         $this->http_response_code = null;
         //load the constant 
         define('AUTH_URL', $_ENV["AUTH_URL"]);
-        define('PRODUCT_CODE', $_ENV["PRODUCT_CODE"]);
 
     }
 

@@ -62,3 +62,14 @@ Route::group(['namespace' => $namespace, 'prefix' => $route.'/report'], function
 Route::group(['namespace' => $namespace, 'prefix' => $route.'/transaction'], function () {
     Route::post('sales', 'Transaction@sales');
 });
+
+
+
+/////////////////////////////////////////////route for OPEN  Api route ////////////////////////////////
+$route = 'openapi';
+$namespace = 'OpenAPI';
+
+Route::group(['namespace' => $namespace, 'prefix' => $route.'/outlet'], function () {
+    Route::post('detail', 'Outlet@detail');
+});
+
