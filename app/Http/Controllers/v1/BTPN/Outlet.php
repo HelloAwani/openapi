@@ -16,6 +16,7 @@ class Outlet extends \Service\Http\Controllers\v1\_Base
 	}
 	
 	public function list(){
+		
 		$this->validate_request();
 
 		$this->db = "ret";
