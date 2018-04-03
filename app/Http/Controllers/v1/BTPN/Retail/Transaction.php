@@ -62,7 +62,6 @@ class Transaction extends \Service\Http\Controllers\v1\_Base
 		',[
 		 ]
 		, "DiscountDetail");
-'''
 
 
 
