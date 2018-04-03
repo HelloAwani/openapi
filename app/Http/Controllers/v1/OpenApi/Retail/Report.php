@@ -12,8 +12,8 @@ class Report extends \Service\Http\Controllers\v1\_Base
         if($request!=null){
             parent::__construct($request);
 		}
-		$this->product_id = "BTPN";
-		$this->Outlet = new \Service\Http\Controllers\v1\BTPN\Outlet;
+		$this->product_id = "OpenAPI";
+		$this->Outlet = new \Service\Http\Controllers\v1\OpenAPI\Outlet;
 	}
 
 	public function expenses(){

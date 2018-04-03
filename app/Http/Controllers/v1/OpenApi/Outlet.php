@@ -15,14 +15,25 @@ class Outlet extends \Service\Http\Controllers\v1\_Base
 		$this->product_id = "OpenAPI";
 	}
 
-	public function detail(){
-		print_r("expression");
-		$this->validate_request();
 
+	function check_valid_outlet($request,$db){
 
+		$this->db = $db;
+		$br = $this->query('
+			SELECT 
+			b.*
+			from "Branch" b 
+			where b."Active" = \'1\'
+			and "BranchID" = :id
+		', ["id"=>$request["BranchID"]]);
 
-		$this->render(true);
+		if(@$br[0]==null){
+			$this->custom_errors[] = $this->error("Branch Not Found");
+			$this->render();
+		}else{
+			return $br[0];
+		}
+
 	}
-	
 }
 
