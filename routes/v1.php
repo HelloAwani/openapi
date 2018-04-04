@@ -73,3 +73,27 @@ Route::group(['namespace' => $namespace, 'prefix' => $route.'/outlet'], function
     Route::post('detail', 'Outlet@detail');
 });
 
+
+
+//------------------------------------route for OpenAPI Retail sub route ------------------------------------
+$route = 'openapi/retail';
+$namespace = 'OpenAPI\Retail';
+
+Route::group(['namespace' => $namespace, 'prefix' => $route.'/master'], function () {
+    Route::post('items', 'Master@items');
+    Route::post('payment_methods', 'Master@payment_methods');
+    Route::post('discounts', 'Master@discounts');
+    Route::post('expense_types', 'Master@expense_types');
+});
+
+Route::group(['namespace' => $namespace, 'prefix' => $route.'/report'], function () {
+    Route::post('sales/{breakdown}', 'Report@sales');
+    Route::post('expenses', 'Report@expenses');
+    Route::post('pnl', 'Report@pnl');
+    Route::post('void', 'Report@void');
+    Route::post('sales_summary', 'Report@sales_summary');
+});
+
+Route::group(['namespace' => $namespace, 'prefix' => $route.'/transaction'], function () {
+    Route::post('sales', 'Transaction@sales');
+});
