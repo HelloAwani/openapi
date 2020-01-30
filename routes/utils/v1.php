@@ -13,12 +13,6 @@
 
 $version = 'v1';
 
-Route::get('/', function () {
-    print_r("Forbidden");
-});
-Route::get($version, function () {
-    print_r("Forbidden");
-});
 
 Route::group(['prefix' => $version.'/keys'], function () {
     Route::post('generate', 'Keys@generate');

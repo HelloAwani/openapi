@@ -12,11 +12,6 @@
 */
 
 
-Route::get('/', function () {
-    print_r("Forbidden");
-});
-
-
 Route::group(['prefix' => 'lang'], function () {
     Route::post('glossaries', 'Lang@glossaries');
 });

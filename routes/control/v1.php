@@ -12,14 +12,6 @@
 */
 
 $version = 'v1';
-
-Route::get('/', function () {
-    print_r("Forbidden");
-});
-Route::get($version, function () {
-    print_r("Forbidden");
-});
-
 Route::group(['prefix' => $version.'/business'], function () {
     Route::post('submit', 'Business@submit_brand');
 });
