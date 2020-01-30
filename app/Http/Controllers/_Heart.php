@@ -106,12 +106,12 @@ class _Heart
 
         $this->format_date["full"]  =  'Y-M-d H:i:s'; 
     }
-    function generate_token(){	
-		$t = bin2hex(openssl_random_pseudo_bytes(4));
-		$t2 = bin2hex(openssl_random_pseudo_bytes(12));
-		$t3 = bin2hex(openssl_random_pseudo_bytes(36));
-		return $t.''.time().'.'.$t2.'_'.md5(time()).$t3;
-    }	
+    function generate_token(){  
+        $t = bin2hex(openssl_random_pseudo_bytes(4));
+        $t2 = bin2hex(openssl_random_pseudo_bytes(12));
+        $t3 = bin2hex(openssl_random_pseudo_bytes(36));
+        return $t.''.time().'.'.$t2.'_'.md5(time()).$t3;
+    }   
     
     function get_glossaries($glossarry_id_list,  $lang_id  = 0){
         $lang_id =  $lang_id === 0  ? $this->language_string :  $lang_id;
@@ -226,6 +226,7 @@ class _Heart
             }
         }
         $this->response->Status = $this->override_validation_code == false ? 0 : $this->status;
+        $this->response->Errors = $this->coalesce(@$this->response->Errors, []);
         $this->response->Errors = count(@$this->response->Errors) == 0  ? array() : $this->response->Errors;
         //commit changes when all validations are finished
         if($done){
@@ -389,27 +390,27 @@ class _Heart
 
     public function update_query($table, $array, $identifier, $id){
         $collist = "(";
-		$questionlist = "(";
-			$ct=0;
-			$vallist = array();
-			$query = "Update \"".($table)."\" set ";
+        $questionlist = "(";
+            $ct=0;
+            $vallist = array();
+            $query = "Update \"".($table)."\" set ";
 
-			foreach ($array as $key => $value){
+            foreach ($array as $key => $value){
 
-				if($ct!=(count((array)$array)-1)){
-					$query = $query." \"".$key."\" = :$key, ";
-				}else{
-					$query = $query." \"".$key."\" = :$key WHERE \"".$identifier."\" = :$identifier ";
-				}
-				$vallist[$key] = $value;
-				$ct++;
-			}
+                if($ct!=(count((array)$array)-1)){
+                    $query = $query." \"".$key."\" = :$key, ";
+                }else{
+                    $query = $query." \"".$key."\" = :$key WHERE \"".$identifier."\" = :$identifier ";
+                }
+                $vallist[$key] = $value;
+                $ct++;
+            }
 
-			$vallist[$identifier] = $id;
+            $vallist[$identifier] = $id;
             $this->query($query,$vallist);
-		}
+        }
 
-	public function upsert($table, &$array, $id=null){
+    public function upsert($table, &$array, $id=null){
         $identifier = $this->get_pk($table);
 
         $e = 0;
@@ -433,27 +434,27 @@ class _Heart
             $this->update_query($table, $array, $identifier, $id);
             return $id;
         }
-	}
+    }
 
     function get_pk($object){
         
         $pk = \DB::select( \DB::raw('
             select kc.column_name as "PK"
-								from  
-								    information_schema.table_constraints tc,  
-								    information_schema.key_column_usage kc  
-								where 
-								    tc.constraint_type = \'PRIMARY KEY\' 
-								    and kc.table_name = tc.table_name and kc.table_schema = tc.table_schema
-								    and kc.constraint_name = tc.constraint_name
-								    and tc.table_name = :object 
-								    and kc.constraint_schema = \'public\'
+                                from  
+                                    information_schema.table_constraints tc,  
+                                    information_schema.key_column_usage kc  
+                                where 
+                                    tc.constraint_type = \'PRIMARY KEY\' 
+                                    and kc.table_name = tc.table_name and kc.table_schema = tc.table_schema
+                                    and kc.constraint_name = tc.constraint_name
+                                    and tc.table_name = :object 
+                                    and kc.constraint_schema = \'public\'
         
         '), array(
             'object' => $object,
         ));
         return @$pk[0]->PK;
-	}
+    }
 
 
     function query($clause, $params = array()){
@@ -464,18 +465,18 @@ class _Heart
     }
 
     function reset_db(){
-        $this->db =$_ENV["DEF_DB_CONNECTION"];
+        $this->db = env("DEF_DB_CONNECTION");
     }
 
     function start(){
         if($this->use_db_trans){
-		    $this->query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
-		    $this->query('BEGIN;');
+            $this->query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
+            $this->query('BEGIN;');
         }
     }
     function end(){
         if($this->use_db_trans){
-		    $this->query('END;');
+            $this->query('END;');
         }
     }
 
@@ -643,46 +644,47 @@ class _Heart
                 }
             }
         }
-		$this->validator = Validator::make($this->request,$rules, $cm);
+        $this->validator = Validator::make($this->request,$rules, $cm);
         $this->validation_lang_name($rules, $this->coalesce((@$this->request["_language_id"]), 0));
         
     }
 
     //validate  token   request
-	public function validate_request(){
+    public function validate_request(){
 
         $header = trim(@getallheaders()["Authorization"]);
 
-		$this->validator([]);
+        $this->validator([]);
 
-		if($header==null){	
-			$this->add_error("Authorization", $header, "Authorization has ecountered a failure (x1078)");	
-		}
-		$this->render();
+        if($header==null){  
+            $this->add_error("Authorization", $header, "Authorization has ecountered a failure (x1078)");   
+        }
+        $this->render();
 
-		$header = explode(' ', $header);
+        $header = explode(' ', $header);
 
-		
-		if(@$header[0]!='Bearer'){	
-			$this->add_error("Authorization", $header[0], "Authorization has ecountered a failure (x1056)");	
-		}
-		
-		if(@$header[1]==null){	
-			$this->add_error("Authorization", $header[0], "Authorization has ecountered a failure (x1028)");	
-		}
+        
+        if(@$header[0]!='Bearer'){  
+            $this->add_error("Authorization", $header[0], "Authorization has ecountered a failure (x1056)");    
+        }
+        
+        if(@$header[1]==null){  
+            $this->add_error("Authorization", $header[0], "Authorization has ecountered a failure (x1028)");    
+        }
         $this->render();
 
         $etoken = @$this->query('SELECT * FROM "Token" where "Token" = :token and "DisabledDate" is null 
             and :date <= "ExpiryDate"
         ',
-			array(
+            array(
                 "token"=>$header[1],
                 "date"=>$this->now()->full_time
-			)
-		)[0];
+            )
+        )[0];
+        
 
-        if(count($etoken)==0){
-			$this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x1155)");	
+        if(@$etoken->TokenID==null){
+            $this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x1155)");   
         }
 
         $this->render();
@@ -694,14 +696,14 @@ class _Heart
         $this->reset_db();
 
         if(($branch->Active)!='1'){
-			$this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x5001)");	
+            $this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x5001)");   
         }
 
         $this->render();
 
         if($this->enforce_product!=null){
             if($this->enforce_product!=$etoken->ProductID){
-                $this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x5002)");	
+                $this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x5002)");   
                 $this->render();
             }
         }
@@ -734,7 +736,7 @@ class _Heart
         $this->slog($logobject, "LogRequest");
 
 
-	}
+    }
 
     public  function  extract_column($dataset, $colname, $return_if_empty=null){
         $data = [];
@@ -856,20 +858,20 @@ class _Heart
 
     public function general_setting($code){
         return $this->query('SELECT 
-			"gt"."GeneralSettingTypeID" as "ID", 
-			"gt"."GeneralSettingTypeName" as "TypeName", 
-			"gt"."AcceptedDataType" as "DataType",
-			COALESCE(COALESCE("GeneralSetting"."GeneralSettingValue", gt."DefaultValue"),\'\') as 
-			"Value", "Options"
-			FROM 
-			"GeneralSetting"
-			RIGHT JOIN 
-			"GeneralSettingType" gt on "GeneralSetting"."GeneralSettingTypeID" = gt."GeneralSettingTypeID"
+            "gt"."GeneralSettingTypeID" as "ID", 
+            "gt"."GeneralSettingTypeName" as "TypeName", 
+            "gt"."AcceptedDataType" as "DataType",
+            COALESCE(COALESCE("GeneralSetting"."GeneralSettingValue", gt."DefaultValue"),\'\') as 
+            "Value", "Options"
+            FROM 
+            "GeneralSetting"
+            RIGHT JOIN 
+            "GeneralSettingType" gt on "GeneralSetting"."GeneralSettingTypeID" = gt."GeneralSettingTypeID"
             and 
-			"GeneralSetting"."BranchID" = :branchid and 
-			"GeneralSetting"."BrandID" = :brandid
-			WHERE  
-			gt."GeneralSettingTypeID" = :id
+            "GeneralSetting"."BranchID" = :branchid and 
+            "GeneralSetting"."BrandID" = :brandid
+            WHERE  
+            gt."GeneralSettingTypeID" = :id
             ', [
                 "id"=>$code,
                 "branchid"=>$this->request["BranchID"],
