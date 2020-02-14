@@ -162,7 +162,7 @@ class _Heart
     }
 
     function log($extend_data =  []){
-    
+        return;
         $DBTLog  = @\DB::connection('log_activity');
         //log time  must be utc
         $this->set_timezone(0);
@@ -193,6 +193,7 @@ class _Heart
     }
 
     function slog($object,$table_name){
+        return;
        $DBTLog  = @\DB::connection('log_activity');
        $log = $DBTLog->table($table_name)->insert([$object]);
     }
@@ -460,6 +461,7 @@ class _Heart
     function query($clause, $params = array()){
         $this->last_running_query_clause = $clause;
         $this->last_running_query_param = $params;
+        $this->db = $this->db == "HQF" ? "RES" : $this->db;
         $res = \DB::connection($this->db)->select( \DB::raw($clause), $params);
         return @$res;
     }
@@ -510,6 +512,65 @@ class _Heart
         return $date;
     }
 
+
+
+    function get_branch($main_id, $array = null){
+
+        $data = $this->query('SELECT "BranchID", "BranchName", "Address" from "Branch" where "RestaurantID" = :MainID
+            and "Active" = \'1\'
+        ',
+            [
+                "MainID"=> $main_id
+            ]
+        );
+        $rdata = [];
+        if($array){
+            foreach ($data as $d) {
+                $d->{$array} = [];
+                $rdata["br".$d->BranchID] = $d;
+            }
+            return $rdata;
+        }
+
+        return $data;
+    }
+
+    function get_branch_id(){
+
+        $data = $this->get_branch($this->_token_detail->MainID);
+
+        $col = $this->extract_column($data, "BranchID", [0]);
+
+        return $col;
+    }
+
+    public function branchs(){
+
+        $this->validate_request();
+        $this->db  = $this->_token_detail->ProductID;
+        
+        $this->response->Branchs = $this->get_branch($this->_token_detail->MainID);
+
+        $this->reset_db();
+        $this->render(true);
+
+    }
+
+    function join($data, $object){
+
+        $branch = $this->get_branch($this->_token_detail->MainID, $object);
+        foreach ($data as $b) {
+            $dt = @$b->BranchID;
+            if(@$branch["br".$dt]!=null){
+                unset($b->BranchID);
+                $branch["br".$dt]->{$object}[]=$b;
+            }
+        }
+
+        return array_values($branch);
+
+
+    }
 
     //using database
     function utc($format = ""){
@@ -691,11 +752,12 @@ class _Heart
         //check  branch is active
 
         $this->db = $etoken->ProductID;
-        $branch = $this->query('SELECT *  FROM  "Branch"  where "BranchID" = :id ',
+        $branch = @$this->query('SELECT *  FROM  "Branch"  where "BranchID" = :id ',
         ["id"=>$etoken->BranchID])[0];
         $this->reset_db();
-
-        if(($branch->Active)!='1'){
+        if((@$branch->Active)!='1'  
+            && !in_array($this->enforce_product, ["HQF"])
+            ){
             $this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x5001)");   
         }
 

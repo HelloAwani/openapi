@@ -1,6 +1,6 @@
 <?php
 
-namespace Service\Http\Controllers\FNB\v1;
+namespace Service\Http\Controllers\BFNB\v1;
 
 use Illuminate\Http\Request;
 use Service\Http\Requests;
@@ -13,7 +13,7 @@ class Inventory extends \Service\Http\Controllers\_Heart
             parent::__construct($request);
 		}
 		$this->api_version =  "v1";
-		$this->enforce_product  = "RES";
+		$this->enforce_product  = "HQF";
 	}
 	
 	public function ingredient_usages(){

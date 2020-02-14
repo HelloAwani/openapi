@@ -70,6 +70,18 @@ return [
             'schema' => 'public',
             'sslmode' => 'prefer',
         ],
+        'HQF' => [
+            'driver' => 'pgsql',
+            'host' => env('FNB_DB_HOST'),
+            'port' => env('FNB_DB_PORT'),
+            'database' => env('FNB_DB_DATABASE'),
+            'username' => env('FNB_DB_USERNAME'),
+            'password' => env('FNB_DB_PASSWORD'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+        ],
         'RET' => [
             'driver' => 'pgsql',
             'host' => env('RETAIL_DB_HOST'),
