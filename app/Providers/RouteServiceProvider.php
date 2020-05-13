@@ -46,6 +46,7 @@ class RouteServiceProvider extends ServiceProvider
         $this->map_routes("bfnb", "BFNB", "v1");
         $this->map_routes("retail", "Retail", "v1");
         $this->map_routes("utils", "Utils", "v1");
+        $this->map_routes("opentrans", "OpenTransaction", "v1");
     }
 
     protected function map_routes($prefix, $folder,$version)

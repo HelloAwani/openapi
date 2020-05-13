@@ -49,7 +49,7 @@ class Token extends \Service\Http\Controllers\_Heart
 
 		$hash  = $header[1];
 
-		$outlet  = @$this->query('SELECT *, ac."APIKey", ac."APISecret" from "OutletAPIMapping" oa
+		$outlet  = @$this->query('SELECT *, ac."APIKey", ac."APISecret", ac."Meta" from "OutletAPIMapping" oa
 			join "APICredential" ac on ac."APICredentialID" =  oa."APICredentialID"
 			where 
 			oa."DisabledDate" is  null
@@ -74,7 +74,7 @@ class Token extends \Service\Http\Controllers\_Heart
 			$this->add_error("Authorization", "Outlet", "Authorization has ecountered a failure (x0158)");	
 		}
 		$this->render();
-
+		$this->ACMeta = json_decode($outlet->Meta);
 		$token =  [
 			"APICredentialID"=>$outlet->APICredentialID,
 			"OutletAPIMappingID"=>$outlet->OutletAPIMappingID,

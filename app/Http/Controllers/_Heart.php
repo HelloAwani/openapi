@@ -751,10 +751,23 @@ class _Heart
         $this->render();
         //check  branch is active
 
+        $mapping = $this->query('SELECT * FROM "OutletAPIMapping" where "OutletAPIMappingID" = :id ', ["id"=>$etoken->OutletAPIMappingID])[0];
+        $meta_mapping = json_decode(@$mapping->Meta);
+        $this->MappingMeta = $meta_mapping;
+
+        $apikey = $this->query('SELECT * FROM "APICredential" where "APICredentialID" = :id ', ["id"=>$etoken->APICredentialID])[0];
+        $this->ACMeta = json_decode($apikey->Meta);
+
         $this->db = $etoken->ProductID;
+
+        if(@$meta_mapping->SubProduct!=null){
+            $this->db = $meta_mapping->SubProduct;
+        }
+
         $branch = @$this->query('SELECT *  FROM  "Branch"  where "BranchID" = :id ',
         ["id"=>$etoken->BranchID])[0];
         $this->reset_db();
+        $this->outlet_info = $branch;
         if((@$branch->Active)!='1'  
             && !in_array($this->enforce_product, ["HQF"])
             ){

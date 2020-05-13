@@ -58,6 +58,18 @@ return [
             'schema' => 'public',
             'sslmode' => 'prefer',
         ],
+        'OpenTransaction' => [
+            'driver' => 'pgsql',
+            'host' => env('OAP_DB_HOST'),
+            'port' => env('OAP_DB_PORT'),
+            'database' => env('OAP_DB_DATABASE'),
+            'username' => env('OAP_DB_USERNAME'),
+            'password' => env('OAP_DB_PASSWORD'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'schema' => 'opentrans',
+            'sslmode' => 'prefer',
+        ],
         'RES' => [
             'driver' => 'pgsql',
             'host' => env('FNB_DB_HOST'),
