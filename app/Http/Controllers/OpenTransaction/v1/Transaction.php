@@ -29,14 +29,31 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		switch ($this->MappingMeta->SubProduct) {
 			case 'RES':{
 
+					$ex = $this->query('SELECT * 
+						from "ExtCustomer" ec 
+						join "Handler" h on h."ExtCustomerID" = ec."ExtCustomerID"
+						where ec."ExtCustomerID" = :id and ec."ExtensionID" = :eid
+						and h."HandlerID" = :hid
+						',[
+						"id"=>@$this->request["ExtCustomerID"],
+			 			"eid"=> $this->ACMeta->ExtName,
+						"hid"=>@$this->request["HandlerID"],
+					]);
+
+					if(count($ex)==0){
+						$this->add_error("CH", "CH", "Customer/Handler ID is Invalid");	
+					}
+					$this->render();
 
 					$trans = [
 						"Date" => @$this->request["Date"],
 						"Name" => @$this->request["Name"],
+						"ExtCustomerID" => @$this->request["ExtCustomerID"],
 						"Address" => @$this->request["Address"],
 						"Phone" => @$this->request["Phone"],
 						"Email" => @$this->request["Email"],
 						"GrandTotal" => @$this->request["GrandTotal"],
+						"HandlerID" => @$this->request["HandlerID"],
 						"CreatedDate" => @$this->now()->full_time,
 						"ProductID" => @$this->MappingMeta->SubProduct,
 						"BranchID" => @$this->_token_detail->BranchID,
@@ -77,7 +94,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 							"Qty" => @$item["Qty"]
 						];
 						if(!in_array(@$item["ItemID"], $menu_id)){
-							$this->add_error("Item", "Item", "Item ID is Invalid");	
+							$this->add_error("Item", "Item", "Item ID {$item["ItemID"]} is Invalid");	
 						}
 						$this->render();
 						$ext_dtl_id = $this->upsert("ExtTransactionDetail", $dtl);
@@ -94,7 +111,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 								];
 
 								if(!in_array(@$mod["ModifierID"], $mod_id)){
-									$this->add_error("Modifier", "Modifier", "Modifier ID is Invalid");	
+									$this->add_error("Modifier", "Modifier", "Modifier ID {$mod["ModifierID"]} is Invalid");	
 								}
 								$this->render();
 								$this->upsert("ExtTransactionModifier", $mdtl);

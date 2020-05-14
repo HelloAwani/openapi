@@ -66,6 +66,8 @@ class Customer extends \Service\Http\Controllers\_Heart
 		$this->db  = $this->_token_detail->ProductID;
 
 		$dt = $this->query('SELECT "ExtCustomerID", "FullName", "DefaultAddress", "DefaultPhone", "DefaultEmail", "CreatedDate" FROM "ExtCustomer" where "ExtensionID" = :eid 
+			and  "DeletedDate" is null 
+
 			order by "CreatedDate" desc 
 			',
 			["eid"=>$this->ACMeta->ExtName]
@@ -99,6 +101,8 @@ class Customer extends \Service\Http\Controllers\_Heart
 		$dt = $this->query('SELECT ec."ExtCustomerID" FROM "ExtCustomer" ec 
 			join "Handler" h on h."ExtCustomerID" = ec."ExtCustomerID"
 			and ec."ExtensionID" = :eid 
+			and ec."DeletedDate" is null 
+			and h."DeletedDate" is null
 			and 
 			(
 				lower(trim("FullName")) like lower(trim( :fname ))
@@ -113,6 +117,7 @@ class Customer extends \Service\Http\Controllers\_Heart
 				and 
 				lower(trim("ReferenceID")) like lower(trim( :ref ))
 			)
+			limit 10 
 			',
 			$filter
 		);

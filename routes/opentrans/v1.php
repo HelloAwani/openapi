@@ -28,3 +28,6 @@ Route::group(['prefix' => $version.'/transaction'], function () {
     Route::post('submit', 'Transaction@submit');
     Route::post('fetch', 'Transaction@fetch');
 });
+Route::group(['prefix' => $version.'/tun'], function () {
+    Route::post('hellobill', 'Tunnel@create_hellobill_token');
+});
