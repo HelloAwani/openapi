@@ -126,6 +126,7 @@ class Customer extends \Service\Http\Controllers\_Heart
 
 		$dt = $this->query('SELECT "ExtCustomerID", "FullName", "DefaultAddress", "DefaultPhone", "DefaultEmail", "CreatedDate" FROM "ExtCustomer" where "ExtensionID" = :eid 
 			and "ExtCustomerID" in ('.implode(',', $cs).') 
+			
 			order by "CreatedDate" desc 
 			',
 			["eid"=>$this->ACMeta->ExtName]
