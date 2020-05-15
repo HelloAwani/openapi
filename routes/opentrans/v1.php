@@ -29,5 +29,5 @@ Route::group(['prefix' => $version.'/transaction'], function () {
     Route::post('fetch', 'Transaction@fetch');
 });
 Route::group(['prefix' => $version.'/tun'], function () {
-    Route::post('hellobill', 'Tunnel@create_hellobill_token');
+    Route::post('hellobill', 'Tunnel@fetch_transaction');
 });

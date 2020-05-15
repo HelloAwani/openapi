@@ -151,7 +151,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		$this->validator($rules);
 
 		$where = "";
-		switch ($this->request["Status"]) {
+		switch (@$this->request["Status"]) {
 			case 'Closed':
 				$where.=' and "FinishedDate" is not null' ;
 
@@ -185,7 +185,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						"id" => @$this->_token_detail->BranchID,
 						"mid" => @$this->_token_detail->MainID,
 						"pid" => $this->MappingMeta->SubProduct,
-						"date" => $this->request["Date"]
+						"date" => @$this->request["Date"]
 					]
 				);
 
