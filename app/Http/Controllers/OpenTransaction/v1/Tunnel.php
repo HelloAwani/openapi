@@ -14,14 +14,17 @@ class Tunnel extends \Service\Http\Controllers\_Heart
 		}
 		$this->api_version =  "v1";
 		//$this->enforce_product  = "OpenTransaction";
+
+
+		$whitelists = explode(',', env("WHITELISTS"));
+		if(!in_array($_SERVER["REMOTE_ADDR"], $whitelists)){
+			print_r($_SERVER["REMOTE_ADDR"]);
+			exit();
+		}
+
 	}
 
 	public function fetch_transaction(){
-		$whitelists = explode(',', env("WHITELISTS"));
-		if(!in_array($_SERVER["REMOTE_ADDR"], $whitelists)){
-	        return response()->view('errors.500', [], 500);
-		}
-
 		$this->db = "OpenTransaction";
 
 		$rules = [
@@ -100,11 +103,6 @@ class Tunnel extends \Service\Http\Controllers\_Heart
 	}
 
 	public function update_transaction(){
-		$whitelists = explode(',', env("WHITELISTS"));
-		if(!in_array($_SERVER["REMOTE_ADDR"], $whitelists)){
-	        return response()->view('errors.500', [], 500);
-		}
-
 		$this->db = "OpenTransaction";
 
 
