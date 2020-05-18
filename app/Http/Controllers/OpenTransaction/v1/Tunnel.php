@@ -24,9 +24,6 @@ class Tunnel extends \Service\Http\Controllers\_Heart
 
 		$this->db = "OpenTransaction";
 
-
-
-
 		$rules = [
 			'Date' => 'required',
 			'Status' => 'required',
@@ -83,11 +80,11 @@ class Tunnel extends \Service\Http\Controllers\_Heart
 
 		$trx_id = $this->extract_column($trx, "ExtTransactionID", [0]);
 		if(@$this->request["Status"]==="Unsynced"){
-			$this->query('UPDATE "ExtTransaction" set "SyncDate" = :date where "ExtTransactionID" in ('.implode(',', $trx_id).') ', 
+			/*$this->query('UPDATE "ExtTransaction" set "SyncDate" = :date where "ExtTransactionID" in ('.implode(',', $trx_id).') ', 
 				[
 					"date"=>$this->now()->full_time
 				]
-			);
+			);*/
 		}
 
 
@@ -101,6 +98,34 @@ class Tunnel extends \Service\Http\Controllers\_Heart
 		$this->response->Transactions = $trx;
 		$this->render(true);
 	}
+
+	public function update_transaction(){
+		$whitelists = explode(',', env("WHITELISTS"));
+		if(!in_array($_SERVER["REMOTE_ADDR"], $whitelists)){
+	        return response()->view('errors.500', [], 500);
+		}
+
+		$this->db = "OpenTransaction";
+
+
+		$rules = [
+			'ExtTransactionID' => 'required',
+			'GeneratedTransactionID' => 'numeric',
+		];
+		//standar validator
+		$this->validator($rules);
+
+
+		$data["FinishedDate"] = $this->now()->full_time;
+		$data["OrderID"] = @$this->request["GeneratedTransactionID"];
+
+		$this->upsert("ExtTransaction", $data, $this->request["ExtTransactionID"]);
+
+
+		$this->response->FinishedDate = $data["FinishedDate"];
+		$this->render(true);
+	}
+
 
 
 }

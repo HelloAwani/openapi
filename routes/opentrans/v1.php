@@ -30,4 +30,5 @@ Route::group(['prefix' => $version.'/transaction'], function () {
 });
 Route::group(['prefix' => $version.'/tun'], function () {
     Route::post('hellobill', 'Tunnel@fetch_transaction');
+    Route::post('hellobill_set_status', 'Tunnel@update_transaction');
 });

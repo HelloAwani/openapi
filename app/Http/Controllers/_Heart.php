@@ -438,8 +438,10 @@ class _Heart
     }
 
     function get_pk($object){
-        
-        $pk = \DB::select( \DB::raw('
+
+        $schema = \DB::connection($this->db)->select( \DB::raw('SHOW search_path'))[0]->search_path;
+
+        $pk = \DB::connection($this->db)->select( \DB::raw('
             select kc.column_name as "PK"
                                 from  
                                     information_schema.table_constraints tc,  
@@ -449,7 +451,7 @@ class _Heart
                                     and kc.table_name = tc.table_name and kc.table_schema = tc.table_schema
                                     and kc.constraint_name = tc.constraint_name
                                     and tc.table_name = :object 
-                                    and kc.constraint_schema = \'public\'
+                                    and kc.constraint_schema = \''.$schema.'\'
         
         '), array(
             'object' => $object,
