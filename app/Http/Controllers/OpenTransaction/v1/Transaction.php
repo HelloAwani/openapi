@@ -204,6 +204,11 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 				$trx_mod = $this->query('SELECT * from "ExtTransactionModifier" where "ExtTransactionDetailID" in ('.implode(',', $trx_dtl_id).') ');
 				$this->map_record($trx_dtl,"Modifiers", "ExtTransactionDetailID", $trx_mod);
+				foreach ($trx_dtl as $key => $value) {
+					if(@$value->ExtTransactionID==null){
+						unset($trx_dtl[$key]);
+					}
+				}
 				$this->map_record($trx,"Items", "ExtTransactionID", $trx_dtl);
 
 
