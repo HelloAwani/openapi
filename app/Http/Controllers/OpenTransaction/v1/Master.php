@@ -131,7 +131,11 @@ class Master extends \Service\Http\Controllers\_Heart
 		$this->render();
 
 		$oi = new \stdClass();
+		$oi->BranchID = $this->outlet_info->BranchID;
 		$oi->BranchName = $this->outlet_info->BranchName;
+		$oi->BrandID = $this->outlet_info->RestaurantID;
+		$oi->BrandName = $this->query('SELECT "RestaurantName" from "RestaurantMaster" where "RestaurantID" = :rid ', ["rid"=>$this->outlet_info->RestaurantID])[0]->RestaurantName;
+		$oi->ProductCode = "RES";
 		$oi->Address = $this->outlet_info->Address;
 		$oi->Contact = $this->outlet_info->Contact;
 		$oi->Description = $this->outlet_info->Description;

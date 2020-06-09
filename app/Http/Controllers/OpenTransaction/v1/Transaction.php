@@ -62,16 +62,18 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 					$this->db  = $this->MappingMeta->SubProduct;
 
-					$menu  = $this->query('SELECT m."MenuID", mi."ModifierItemID"
-						From "MenuModifier" mm
-						join "Menu" m on m."MenuID" = mm."MenuID"
-						join "ModifierGroup" mg on mg."ModifierGroupID" = mm."ModifierGroupID"
-						join "ModifierItem" mi on mg."ModifierGroupID" = mi."ModifierGroupID"
-						where m."BranchID" = :BranchID and  m."RestaurantID" = :MainID  
-						AND (m."Archived" is null or m."Archived" = \'N\')
-						AND (mi."Archived" is null or mi."Archived" = \'N\')
-						AND (mg."Archived" is null or mg."Archived" = \'N\')
-						order by m."MenuCode"
+					$menu  = $this->query('
+					SELECT m."MenuID", mi."ModifierItemID"
+											From "MenuModifier" mm
+											join "Menu" m on m."MenuID" = mm."MenuID"
+											left join "ModifierGroup" mg on mg."ModifierGroupID" = mm."ModifierGroupID"
+											left join "ModifierItem" mi on mg."ModifierGroupID" = mi."ModifierGroupID"
+					
+											AND (mi."Archived" is null or mi."Archived" = \'N\')
+											AND (mg."Archived" is null or mg."Archived" = \'N\')
+											where m."BranchID" = :BranchID and  m."RestaurantID" = :MainID  
+											AND (m."Archived" is null or m."Archived" = \'N\')
+											order by m."MenuCode"
 						',
 						[
 							"BranchID"=> $this->_token_detail->BranchID,

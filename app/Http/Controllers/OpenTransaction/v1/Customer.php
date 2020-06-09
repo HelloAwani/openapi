@@ -51,9 +51,10 @@ class Customer extends \Service\Http\Controllers\_Heart
 		$cust_id = $this->upsert("ExtCustomer", $cust);
 
 		$handler["ExtCustomerID"] = $cust_id;
-		$this->upsert("Handler", $handler);
+		$handler_id = $this->upsert("Handler", $handler);
 
 		$this->response->ExtCustomerID = $cust_id;
+		$this->response->HandlerID = $handler_id;
 
 		$this->render(true);
 	}
@@ -74,7 +75,7 @@ class Customer extends \Service\Http\Controllers\_Heart
 		);
 
 		$cs = $this->extract_column($dt, "ExtCustomerID", [0]);
-		$handlers = $this->query('SELECT "ExtCustomerID", "HandlerName", "ReferenceID" from "Handler" where "ExtCustomerID" in ('.implode(',', $cs).') ');
+		$handlers = $this->query('SELECT "ExtCustomerID","HandlerID", "HandlerName", "ReferenceID" from "Handler" where "ExtCustomerID" in ('.implode(',', $cs).') ');
 		
 		$this->map_record($dt,"Handlers", "ExtCustomerID", $handlers);
 
