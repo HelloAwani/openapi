@@ -25,6 +25,7 @@ Route::group(['prefix' => $version.'/master'], function () {
 
 Route::group(['prefix' => $version.'/transaction'], function () {
     Route::post('fetch', 'Transaction@fetch');
+    Route::post('summary', 'Transaction@summary');
 });
 
 Route::group(['prefix' => $version.'/inventory'], function () {

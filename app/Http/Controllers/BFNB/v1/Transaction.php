@@ -15,6 +15,149 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		$this->api_version =  "v1";
 		$this->enforce_product  = "HQF";
 	}
+
+
+
+
+
+
+
+	public function summary(){
+
+		$this->validate_request();
+		$this->db  = $this->_token_detail->ProductID;
+		$bbid = $this->get_branch_id();
+
+		$rules = [
+			'Date' => 'required|date_format:Y-m-d',		
+		];
+
+		$this->render();
+		$bbid = $this->get_branch_id();
+
+
+		$order_bill = $this->query('SELECT
+			rm."RestaurantName" as "BrandName",
+			ob."BranchID",
+			b."BranchName",
+			b."Address",
+			count(*) as "TotalTransaction",
+			sum("Bill") as "TotalNetBill",
+			sum("VAT") as "TotalVAT",
+			sum("ServiceTax") as "TotalServiceCharge",
+			sum("Rounding") as "TotalRounding", 
+			sum("TotalPayment") as "TotalPayment",
+			sum("Changes") as "TotalChanges" ,
+			coalesce(sum("Discount"),0) as "TotalDiscount",
+			sum("TotalBilling") "TotalGrossBill"
+ 
+			from "OrderBill" ob 
+			join "Branch" b on b."BranchID" = ob."BranchID"
+			join "RestaurantMaster" rm on rm."RestaurantID" = b."RestaurantID"
+			where 
+			ob."BranchID" in ('.implode(',', $bbid).')
+			and
+			ob."RestaurantID"  = :MainID
+			and
+			to_char("Date", \'yyyy-MM-dd\') = :Date
+			and ("Void" is null or "Void" = \'N\')
+			group by 1,2,3,4
+		',
+		[
+			"MainID"=> $this->_token_detail->MainID,
+			"Date"=>$this->request["Date"]
+		]
+		);
+		foreach($order_bill as $k=>$v){
+			$order_bill["branch".$v->BranchID] = $v;
+			$order_bill["branch".$v->BranchID]->ItemSummary = [];
+			$order_bill["branch".$v->BranchID]->PaymentSummary = [];
+
+			unset($order_bill[$k]);
+		}
+
+		
+		$order_bill_detail = $this->query('SELECT
+			obd."BranchID",
+			m."MenuID" "ItemID",
+			m."MenuCode" "ItemCode",
+			m."MenuName" "ItemName",
+			sum("Qty") "TotalQty",
+			sum("SubTotal") "TotalAmount", 
+			coalesce(sum(obd."Discount"),0) "TotalDiscount"
+			from "OrderBillDetail"  obd 
+			join "OrderBill" ob on ob."OrderBillID" = obd."OrderBillID"
+			join "Menu" m on m."MenuID" = obd."MenuID"
+			WHERE
+			ob."BranchID" in ('.implode(',', $bbid).')
+			and
+			ob."RestaurantID"  = :MainID
+			and
+			to_char("Date", \'yyyy-MM-dd\') = :Date
+			and (ob."Void" is null or ob."Void" = \'N\')
+			and (obd."Void" is null or obd."Void" = \'N\')
+			group by 1,2,3,4
+		',
+		[
+			"MainID"=> $this->_token_detail->MainID,
+			"Date"=>$this->request["Date"]
+		]
+		);
+
+		foreach($order_bill_detail as $k=>$v){
+			$order_bill["branch".$v->BranchID]->ItemSummary[] = $v;
+		}
+
+
+
+
+		$payments = $this->query('SELECT
+			ob."BranchID",
+			"PaymentMethodID", 
+			"PaymentMethodName", 
+			sum("Payment") "TotalPayment"
+			from "Payment" p
+			join "OrderBill" ob on ob."OrderBillID" = p."OrderBillID"
+			WHERE
+			ob."BranchID" in ('.implode(',', $bbid).')
+			and
+			ob."RestaurantID"  = :MainID
+			and
+			to_char(ob."Date", \'yyyy-MM-dd\') = :Date
+			and (ob."Void" is null or ob."Void" = \'N\')
+			group by 1,2,3
+		',
+		[
+			"MainID"=> $this->_token_detail->MainID,
+			"Date"=>$this->request["Date"]
+		]
+		);
+		foreach($payments  as &$d){
+			$d->PaymentMethodName = $d->PaymentMethodID == null ? 'Cash' : $d->PaymentMethodName ;
+		}
+		foreach($payments as $k=>$v){
+			$order_bill["branch".$v->BranchID]->PaymentSummary[] = $v;
+		}
+
+		$this->response->Summaries = array_values($order_bill);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		$this->reset_db();
+		$this->render(true);
+
+	}
 	
 	public function fetch(){
 		$this->validate_request();
@@ -26,6 +169,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		];
 		//standar validator
 		$this->validator($rules);
+	
 		
 		$this->render();
 		$bbid = $this->get_branch_id();
@@ -207,31 +351,6 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		);
 		
 		$this->map_record($data,"Modifiers", "OrderBillDetailID", $order_bill_modifier_detail, "Bills.Items");
-
-		$payments = $this->query('SELECT
-			"BranchID",
-			 "OrderBillID", 
-			 "PaymentID",
-			 "Date",
-			 "PaymentMethodID",
-			 "Payment" "Amount",
-			 "ReferenceNumber",
-			 "PaymentMethodName" 
-			from "Payment" 
-			WHERE
-			"BranchID" in ('.implode(',', $bbid).')
-			and
-			"RestaurantID"  = :MainID 
-			and "OrderBillID" in ('.implode(',', $order_bill_id).')
-		',
-		[
-			"MainID"=> $this->_token_detail->MainID,
-		]
-		);
-		foreach($payments  as &$d){
-			$d->PaymentMethodName = $d->PaymentMethodID == null ? 'Cash' : $d->PaymentMethodName ;
-		}
-
 		$this->map_record($data,"Payments", "OrderBillID", $payments, "Bills");
 		
 		
