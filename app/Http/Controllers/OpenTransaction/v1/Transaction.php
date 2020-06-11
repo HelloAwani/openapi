@@ -62,7 +62,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 					$this->db  = $this->MappingMeta->SubProduct;
 
-					$menu  = $this->query('
+					$modifier  = $this->query('
 					SELECT m."MenuID", mi."ModifierItemID"
 											From "MenuModifier" mm
 											join "Menu" m on m."MenuID" = mm."MenuID"
@@ -71,6 +71,16 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					
 											AND (mi."Archived" is null or mi."Archived" = \'N\')
 											AND (mg."Archived" is null or mg."Archived" = \'N\')
+											where m."BranchID" = :BranchID and  m."RestaurantID" = :MainID  
+											order by m."MenuCode"
+						',
+						[
+							"BranchID"=> $this->_token_detail->BranchID,
+							"MainID"=> $this->_token_detail->MainID
+						]
+					);
+					$menu  = $this->query('
+					SELECT m."MenuID" from "Menu" m
 											where m."BranchID" = :BranchID and  m."RestaurantID" = :MainID  
 											AND (m."Archived" is null or m."Archived" = \'N\')
 											order by m."MenuCode"
@@ -81,7 +91,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						]
 					);
 					$menu_id = $this->extract_column($menu, "MenuID", []);
-					$mod_id = $this->extract_column($menu, "ModifierItemID", []);
+					$mod_id = $this->extract_column($modifier, "ModifierItemID", []);
 
 					$this->db  = $this->_token_detail->ProductID;
 

@@ -132,7 +132,7 @@ class Customer extends \Service\Http\Controllers\_Heart
 			',
 			["eid"=>$this->ACMeta->ExtName]
 		);
-		$handlers = $this->query('SELECT "ExtCustomerID", "HandlerName", "ReferenceID" from "Handler" where "ExtCustomerID" in ('.implode(',', $cs).') ');
+		$handlers = $this->query('SELECT "ExtCustomerID","HandlerID", "HandlerName", "ReferenceID" from "Handler" where "ExtCustomerID" in ('.implode(',', $cs).') ');
 		
 		$this->map_record($dt,"Handlers", "ExtCustomerID", $handlers);
 
