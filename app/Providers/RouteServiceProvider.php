@@ -43,6 +43,7 @@ class RouteServiceProvider extends ServiceProvider
         $this->map_routes("auth", "Auth", "v1");
         $this->map_routes("business", "Business", "v1");
         $this->map_routes("fnb", "FNB", "v1");
+        $this->map_routes("ofnb", "OFNB", "v1");
         $this->map_routes("bfnb", "BFNB", "v1");
         $this->map_routes("retail", "Retail", "v1");
         $this->map_routes("utils", "Utils", "v1");
