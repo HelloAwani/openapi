@@ -14,14 +14,14 @@ class Shift implements ShiftInterface {
 				ShiftDB::where('ShiftID', $id)->update($data);
 				return $this->find($id);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}else{
 			// insert data
 			try{
 				return ShiftDB::insert($data);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}
 	}
@@ -30,7 +30,7 @@ class Shift implements ShiftInterface {
 		try{
 			return ShiftDB::findOrFail($id);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 
@@ -39,9 +39,9 @@ class Shift implements ShiftInterface {
 		$result = ShiftDB::query()->select(['ShiftCode','ShiftName','From','To','ShiftID'])->where('BranchID', $param->BranchID)->where('BrandID', $param->MainID);
         if(!empty($keyword)){
         	$result = $result->where(function ($query) use($keyword){
-        		 $query->where(DB::raw('lower(trim("ShiftName"::varchar))'),'like',"'%".$keyword."%'")
-        		 			->orWhere(DB::raw('lower(trim("From"::varchar))'),'like','%'.$keyword.'%')
-        		 			->orWhere(DB::raw('lower(trim("To"::varchar))'),'like','%'.$keyword.'%');
+        		 $query->where(DB::raw('lower(trim("ShiftName"::varchar))'),'like',"'%".strtolower($keyword)."%'")
+        		 			->orWhere(DB::raw('lower(trim("From"::varchar))'),'like','%'.strtolower($keyword).'%')
+        		 			->orWhere(DB::raw('lower(trim("To"::varchar))'),'like','%'.strtolower($keyword).'%');
         	});	
         }
         $totalFiltered = $result->count();
@@ -64,7 +64,7 @@ class Shift implements ShiftInterface {
 		try{
 			return ShiftDB::destroy($id);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 

@@ -50,19 +50,11 @@ class General implements GeneralInterface {
 		try{
             if(!empty($id)){
                 // update data
-                try{
-                    DB::table('GeneralSetting')->where('BranchID',$param->BranchID)->where('BrandID',$param->MainID)->where('GeneralSettingID', $id)->update($data);
+                DB::table('GeneralSetting')->where('BranchID',$param->BranchID)->where('BrandID',$param->MainID)->where('GeneralSettingID', $id)->update($data);
                     return '';
-                }catch(\Exception $e){
-                    return ['error'=>true, 'message'=>$e->getMessage()];
-                }
             }else{
                 // insert data
-                try{
-                    return DB::table('GeneralSetting')->insert($data);
-                }catch(\Exception $e){
-                    return ['error'=>true, 'message'=>$e->getMessage()];
-                }
+                return DB::table('GeneralSetting')->insert($data);
             }
 		}catch(\Exception $e){
 			return 0;
@@ -74,7 +66,7 @@ class General implements GeneralInterface {
 		try{
 			return DB::table('GeneralSetting')->where('BranchID',$param->BranchID)->where('BrandID',$param->MainID)->where('GeneralSettingTypeID', $id)->get();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
     }
     

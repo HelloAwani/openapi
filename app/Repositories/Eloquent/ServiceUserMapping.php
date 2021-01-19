@@ -56,7 +56,7 @@ class Meta implements MetaInterface {
             );
 			return DB::table($table)->where($table.'ID', $id)->update($data);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
     
@@ -68,7 +68,7 @@ class Meta implements MetaInterface {
             );
 			return DB::table($table)->where($column, $id)->delete();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
     

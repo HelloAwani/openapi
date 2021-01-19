@@ -14,14 +14,14 @@ class Staff implements StaffInterface {
 				StaffDB::where('UserID', $id)->update($data);
 				return $this->find($id);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}else{
 			// insert data
 			try{
 				return StaffDB::insert($data);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}
 	}
@@ -30,7 +30,7 @@ class Staff implements StaffInterface {
 		try{
 			return StaffDB::findOrFail($id);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 
@@ -39,20 +39,20 @@ class Staff implements StaffInterface {
 			if($mode == 'first') return StaffDB::where($column, $value)->first();
 			else return StaffDB::where($column, $value)->get();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 
 	public function get($perPage = 10, $start = 0, $orderBy = null, $sort = 'asc', $keyword = null, $param){
 		$offset = $start;
-		$result = StaffDB::select('User.UserID as UserID','ShiftName','UserTypeName','UserCode','Fullname','User.Email')->join('Shift','User.ShiftID','=','Shift.ShiftID')->join('UserType','User.UserTypeID','=','UserType.UserTypeID')->where('User.BranchID', $param->BranchID)->where('User.BrandID', $param->MainID);
+		$result = StaffDB::select('User.UserID as UserID','ShiftName','UserTypeName','UserCode','Fullname','User.Email')->join('Shift','User.ShiftID','=','Shift.ShiftID')->join('UserType','User.UserTypeID','=','UserType.UserTypeID')->where('User.BranchID', $param->BranchID)->where('User.BrandID', $param->MainID)->where('User.Archived', null);
         if(!empty($keyword)){
         	$result = $result->where(function ($query) use($keyword){
-        		 $query->where(DB::raw('lower(trim("ShiftName"::varchar))'),'like','%'.$keyword.'%')
-        		 			->orWhere(DB::raw('lower(trim("UserTypeName"::varchar))'),'like','%'.$keyword.'%')
-        		 			->orWhere(DB::raw('lower(trim("UserCode"::varchar))'),'like','%'.$keyword.'%')
-        		 			->orWhere(DB::raw('lower(trim("Email"::varchar))'),'like','%'.$keyword.'%')
-        		 			->orWhere(DB::raw('lower(trim("Fullname"::varchar))'),'like','%'.$keyword.'%');
+        		 $query->where(DB::raw('lower(trim("ShiftName"::varchar))'),'like','%'.strtolower($keyword).'%')
+        		 			->orWhere(DB::raw('lower(trim("UserTypeName"::varchar))'),'like','%'.strtolower($keyword).'%')
+        		 			->orWhere(DB::raw('lower(trim("UserCode"::varchar))'),'like','%'.strtolower($keyword).'%')
+        		 			->orWhere(DB::raw('lower(trim("Email"::varchar))'),'like','%'.strtolower($keyword).'%')
+        		 			->orWhere(DB::raw('lower(trim("Fullname"::varchar))'),'like','%'.strtolower($keyword).'%');
         	});	
         }
         $totalFiltered = $result->count();
@@ -102,7 +102,7 @@ class Staff implements StaffInterface {
 		try{
 			return StaffDB::destroy($id);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 

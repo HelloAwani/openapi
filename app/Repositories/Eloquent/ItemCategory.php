@@ -14,14 +14,14 @@ class ItemCategory implements ItemCategoryInterface {
 				ItemCategoryDB::where('CategoryID', $id)->update($data);
 				return $this->find($id);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}else{
 			// insert data
 			try{
 				return ItemCategoryDB::insert($data);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}
 	}
@@ -30,7 +30,7 @@ class ItemCategory implements ItemCategoryInterface {
 		try{
 			return ItemCategoryDB::findOrFail($id);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 
@@ -39,7 +39,7 @@ class ItemCategory implements ItemCategoryInterface {
 			if($mode == 'first') return ItemCategoryDB::where($column, $value)->first();
 			else return ItemCategoryDB::where($column, $value)->get();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 
@@ -48,17 +48,18 @@ class ItemCategory implements ItemCategoryInterface {
 		$result = ItemCategoryDB::query()->select(['CategoryCode','CategoryName','Image','CategoryID'])->where('BranchID', $param->BranchID)->where('BrandID', $param->MainID);
         if(!empty($keyword)){
         	$result = $result->where(function ($query) use($keyword){
-        		 $query->where(DB::raw('lower(trim("CategoryName"::varchar))'),'like','%'.$keyword.'%')
-        		 			->orWhere(DB::raw('lower(trim("CategoryCode"::varchar))'),'like','%'.$keyword.'%');
+        		 $query->orWhere(DB::raw('lower(trim("CategoryName"::varchar))'),'like','%'.strtolower($keyword).'%')
+        		 			->orWhere(DB::raw('lower(trim("CategoryCode"::varchar))'),'like','%'.strtolower($keyword).'%');
         	});	
         }
         $totalFiltered = $result->count();
-        $maxPage = ceil($totalFiltered/$perPage);
+        $maxPage =  $perPage==null ? 1 : ceil($totalFiltered/$perPage);
         if(!empty($orderBy)){
         	if(strtolower($sort) != 'asc' && strtolower($sort) != 'desc') $sort = 'asc';
         	$result = $result->orderBy($orderBy,$sort);
         }
-        $result = $result->skip($offset)->take($perPage);
+        $result = $result->skip($offset);
+        $result = $perPage==null ? $result : $result->take($perPage);
 		$response = ['recordsFiltered' => $totalFiltered, 'maxPage' => $maxPage, 'data' => $result->get()];
 		return $response;
 	}
@@ -81,7 +82,7 @@ class ItemCategory implements ItemCategoryInterface {
 		try{
 			return ItemCategoryDB::destroy($id);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 
@@ -89,7 +90,7 @@ class ItemCategory implements ItemCategoryInterface {
 		try{
 			return ItemCategoryDB::orderBy($sortBy, $orderType)->get();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 

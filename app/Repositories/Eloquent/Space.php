@@ -10,12 +10,9 @@ class Space implements SpaceInterface {
 		$offset = $start;
 		$result = DB::table('Space')->join('SpaceSection', 'Space.SpaceSectionID', '=', 'SpaceSection.SpaceSectionID')->select($display)->where('Space.BranchID', $param->BranchID)->where('Space.BrandID', $param->MainID)->where('Space.Archived', null);
         if(!empty($keyword)){
-        	$result = $result->where(function ($query) use($keyword){
+        	$result = $result->where(function ($query) use($keyword, $column){
                 for($i = 0; $i < count($column);$i++){
-                    if($i = 0)
-                        $query->where(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like',"'%".$keyword."%'");
-                    else
-        		 	    $query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.$keyword.'%');
+                    $query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.strtolower($keyword).'%');
                 }
         	});	
         }

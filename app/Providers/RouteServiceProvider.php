@@ -14,6 +14,12 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
+    protected $namespace = 'Service\Http\Controllers';
+    protected $namespaceWeb = 'Service\Http\Controllers\Web';
+
+
+
+    protected $device_version = null;
 
     /**
      * Define your route model bindings, pattern filters, etc.
@@ -33,21 +39,28 @@ class RouteServiceProvider extends ServiceProvider
      * @return void
      */
     public function map()
-    {
-        $this->mapRoute("v1");
+    {   
+        $this->map_routes("auth", "Auth", "v1");
+        $this->map_routes("business", "Business", "v1");
+        $this->map_routes("fnb", "FNB", "v1");
+        $this->map_routes("ofnb", "OFNB", "v1");
+        $this->map_routes("bfnb", "BFNB", "v1");
+        $this->map_routes("retail", "Retail", "v1");
+        $this->map_routes("utils", "Utils", "v1");
+        $this->map_routes("opentrans", "OpenTransaction", "v1");
+        $this->map_routes("dev", "Dev", "v1");
     }
 
-    protected function mapRoute($version)
+    protected function map_routes($prefix, $folder,$version)
     {
-        $name = "Service\Http\Controllers\\".$version;
-        $this->api_version = $version;
-        
+        $name = "Service\Http\Controllers\\".$folder."\\".$version;
+        $this->app_version = $version;
+        $this->app_prefix = $prefix;
         Route::group([
             'namespace' => $name,
-            'prefix' => $version,
+            'prefix' => $this->app_prefix,
         ], function ($router) {
-            require base_path('routes/'.$this->api_version.'.php');
+            require base_path("routes/".$this->app_prefix."/".$this->app_version.'.php');
         });
-        
     }
 }

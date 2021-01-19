@@ -11,7 +11,7 @@ class Meta implements MetaInterface {
 			$result = DB::table($table)->where('BranchID',$branchID)->where('Archived', null)->where('BrandID',$brandID)->where($table.'ID', '<>', $id);
               
         	$result = $result->where(function ($query) use($column,$code){
-                $query->where(DB::raw('lower(trim("'.$column.'"::varchar))'),$code);
+                $query->where(DB::raw('trim("'.$column.'"::varchar)'),$code);
                 $query->orWhere(DB::raw('lower(trim("'.$column.'"::varchar))'),$code);
         	});	  
                 
@@ -22,8 +22,25 @@ class Meta implements MetaInterface {
 		}
 	}
     
-	public function get($table, $data, $param = null, $join = null, $where = null){
+	public function checkUniqueGetID($table, $column, $code, $branchID, $brandID){
 		try{
+			$result = DB::table($table)->where('BranchID',$branchID)->where('Archived', null)->where('BrandID',$brandID);
+              
+        	$result = $result->where(function ($query) use($column,$code){
+                $query->where(DB::raw('trim("'.$column.'"::varchar)'),$code);
+                $query->orWhere(DB::raw('lower(trim("'.$column.'"::varchar))'),$code);
+        	});	  
+                
+            $result = $result->get();
+            @$result = @$result[0]->{$table.'ID'};
+			return $result;
+		}catch(\Exception $e){
+			return 0;
+		}
+	}
+    
+	public function get($table, $data, $param = null, $join = null, $where = null){
+		
             $result = DB::table($table)->select($data);
             
             if($join != null){
@@ -50,36 +67,25 @@ class Meta implements MetaInterface {
             }
             if($param != null)
 			    $result = $result->where($table.'.BranchID',$param->BranchID)->where($table.'.BrandID',$param->MainID)->where($table.'.Archived', null);
-            
 			return $result->get();
-		}catch(\Exception $e){
-			return 0;
-		}
+		
 	}
     
 	public function upsert($table, $data, $param, $id = null){
 		try{
             if(!empty($id)){
                 // update data
-                try{
-                    DB::table($table)->where('BranchID',$param->BranchID)->where('BrandID',$param->MainID)->where($table.'ID', $id)->update($data);
+                DB::table($table)->where('BranchID',$param->BranchID)->where('BrandID',$param->MainID)->where($table.'ID', $id)->update($data);
                     return $this->find($table, $id);
-                }catch(\Exception $e){
-                    return ['error'=>true, 'message'=>$e->getMessage()];
-                }
             }else{
                 // insert data
-                try{
-                    $insertedData = DB::table($table)->insert($data);
-                    if(isset($insertedData['error'])){ 
-                        if($this->environment != 'live') $errorMsg = $insertedData['message'];
-                        else $errorMsg = "Database Error"; 
-                        $response = $this->generateResponse(1, $errorMsg, "Database Error");
-                    }
-                    return array('ID' => $this->getLastID());
-                }catch(\Exception $e){
-                    return ['error'=>true, 'message'=>$e->getMessage()];
+                $insertedData = DB::table($table)->insert($data);
+                if(isset($insertedData['error'])){ 
+                    if($this->environment != 'live') $errorMsg = $insertedData['message'];
+                    else $errorMsg = "Database Error"; 
+                    $response = $this->generateResponse(1, $errorMsg, "Database Error");
                 }
+                return array('ID' => $this->getLastID());
             }
 		}catch(\Exception $e){
 			return 0;
@@ -94,7 +100,7 @@ class Meta implements MetaInterface {
                 return DB::table($table)->where($table.'ID', $id)->get();
             }
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
     }
     
@@ -102,14 +108,14 @@ class Meta implements MetaInterface {
 		try{
 			return DB::table($table)->where($column, $id)->get();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
     }
         
     
-	public function getDataTable($table, $display, $column, $perPage = 10, $start = 0, $orderBy = null, $sort = 'asc', $keyword = null, $param, $join = null){
+	public function getDataTable($table, $display, $column, $perPage = 10, $start = 0, $orderBy = null, $sort = 'asc', $keyword = null, $param, $join = null, $extraWhere = null){
 		$offset = $start;
-		$result = DB::table($table)->select($display)->where('BranchID', $param->BranchID)->where('BrandID', $param->MainID)->where('Archived', null);
+		$result = DB::table($table)->select($display)->where($table.'.BranchID', $param->BranchID)->where($table.'.BrandID', $param->MainID)->where($table.'.Archived', null);
         if($join != null){
             foreach($join as $join){
                 if($join[0] == 'join')
@@ -120,13 +126,16 @@ class Meta implements MetaInterface {
                     $result = $result->leftJoin($join[1], $join[2], $join[3], $join[4]);
             }
         }
+        
+        if($extraWhere != null){
+            foreach($extraWhere as $where){
+                $result = $result->where($where[0], $where[1]);
+            }
+        }
         if(!empty($keyword)){
-        	$result = $result->where(function ($query) use($keyword){
+        	$result = $result->where(function ($query) use($keyword, $column){
                 for($i = 0; $i < count($column);$i++){
-                    if($i = 0)
-                        $query->where(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like',"'%".$keyword."%'");
-                    else
-        		 	    $query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.$keyword.'%');
+        		 	$query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.strtolower($keyword).'%');
                 }
         	});	
         }
@@ -143,9 +152,12 @@ class Meta implements MetaInterface {
     
     
     
-	public function getDataTableTransaction($table, $display, $column, $perPage = 10, $start = 0, $orderBy = null, $sort = 'asc', $keyword = null, $param, $join = null, $extraWhere = null){
+	public function getDataTableTransaction($table, $display, $column, $perPage = 10, $start = 0, $orderBy = null, $sort = 'asc', $keyword = null, $param, $join = null, $extraWhere = null, $dateFrom = null, $dateTo = null){
 		$offset = $start;
 		$result = DB::table($table)->select($display)->where($table.'.BranchID', $param->BranchID)->where($table.'.BrandID', $param->MainID)->distinct();
+        if($dateFrom != null){
+            $result = $result->where('TransactionDate', '>=', $dateFrom)->where('TransactionDate', '<=', $dateTo); 
+        }
         if($join != null){
             foreach($join as $join){
                 if($join[0] == 'join')
@@ -197,7 +209,7 @@ class Meta implements MetaInterface {
             );
 			return DB::table($table)->where($table.'ID', $id)->update($data);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
     
@@ -205,7 +217,7 @@ class Meta implements MetaInterface {
 		try{
 			return DB::table($table)->where($column, $id)->delete();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
     

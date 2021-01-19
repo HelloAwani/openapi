@@ -13,19 +13,20 @@ class SubService implements SubServiceInterface {
         	$result = $result->where(function ($query) use($keyword){
                 for($i = 0; $i < count($column);$i++){
                     if($i = 0)
-                        $query->where(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like',"'%".$keyword."%'");
+                        $query->where(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like',"'%".strtolower($keyword)."%'");
                     else
-        		 	    $query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.$keyword.'%');
+        		 	    $query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.strtolower($keyword).'%');
                 }
         	});	
         }
         $totalFiltered = $result->count();
-        $maxPage = ceil($totalFiltered/$perPage);
+        $maxPage =  $perPage==null ? 1 : ceil($totalFiltered/$perPage);
         if(!empty($orderBy)){
         	if(strtolower($sort) != 'asc' && strtolower($sort) != 'desc') $sort = 'asc';
         	$result = $result->orderBy($orderBy,$sort);
         }
-        $result = $result->skip($offset)->take($perPage);
+        $result = $result->skip($offset);
+        $result = $perPage==null ? $result : $result->take($perPage);
 		$response = ['recordsFiltered' => $totalFiltered, 'maxPage' => $maxPage, 'data' => $result->get()];
 		return $response;
 	}

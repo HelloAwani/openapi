@@ -14,14 +14,14 @@ class UserType implements UserTypeInterface {
 				UserTypeDB::where('id', $id)->update($data);
 				return $this->find($id);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}else{
 			// insert data
 			try{
 				return UserTypeDB::insert($data);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}
 	}
@@ -30,7 +30,7 @@ class UserType implements UserTypeInterface {
 		try{
 			return UserTypeDB::with('Permissions.Permission')->findOrFail($id);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 
@@ -39,9 +39,9 @@ class UserType implements UserTypeInterface {
 		$result = UserTypeDB::query();
         if(!empty($keyword)){
         	$result = $result->where(function ($query) use($keyword){
-        		 $query->where(DB::raw('lower(trim("id"::varchar))'),'like',"'%".$keyword."%'")
-        		 			->orWhere(DB::raw('lower(trim("UserTypeName"::varchar))'),'like','%'.$keyword.'%')
-        		 			->orWhere(DB::raw('lower(trim("UserTypeCode"::varchar))'),'like','%'.$keyword.'%');
+        		 $query->where(DB::raw('lower(trim("id"::varchar))'),'like',"'%".strtolower($keyword)."%'")
+        		 			->orWhere(DB::raw('lower(trim("UserTypeName"::varchar))'),'like','%'.strtolower($keyword).'%')
+        		 			->orWhere(DB::raw('lower(trim("UserTypeCode"::varchar))'),'like','%'.strtolower($keyword).'%');
         	});	
         }
         $totalFiltered = $result->count();
@@ -60,7 +60,7 @@ class UserType implements UserTypeInterface {
 			if($mode == 'first') return UserTypeDB::where($column, $value)->first();
 			else return UserTypeDB::where($column, $value)->get();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 
@@ -82,7 +82,7 @@ class UserType implements UserTypeInterface {
 		try{
 			return UserTypeDB::destroy($id);
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
 

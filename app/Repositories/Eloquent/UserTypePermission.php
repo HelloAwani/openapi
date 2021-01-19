@@ -14,14 +14,14 @@ class UserTypePermission implements UserTypePermissionInterface {
 				UserTypePermissionDB::where('id', $id)->update($data);
 				return $this->find($id);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}else{
 			// insert data
 			try{
 				return UserTypePermissionDB::create($data);
 			}catch(\Exception $e){
-				return ['error'=>true, 'message'=>$e->getMessage()];
+				return ['error'=>true];
 			}
 		}
 	}

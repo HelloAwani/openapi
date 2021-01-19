@@ -13,9 +13,9 @@ class ItemConversion implements ItemConversionInterface {
         	$result = $result->where(function ($query) use($keyword){
                 for($i = 0; $i < count($column);$i++){
                     if($i = 0)
-                        $query->where(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like',"'%".$keyword."%'");
+                        $query->where(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like',"'%".strtolower($keyword)."%'");
                     else
-        		 	    $query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.$keyword.'%');
+        		 	    $query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.strtolower($keyword).'%');
                 }
         	});	
         }

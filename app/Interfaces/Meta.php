@@ -4,6 +4,7 @@ namespace Service\Interfaces;
 interface Meta {
 	// check something
 	public function checkUnique($table, $column, $code, $branchID, $brandID, $id = null);
+	public function checkUniqueGetID($table, $column, $code, $branchID, $brandID);
     // get
 	public function get($table, $data, $param = null, $join = null, $where = null);
     // upsert

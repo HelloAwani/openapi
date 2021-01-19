@@ -17,7 +17,7 @@ class Permission implements PermissionInterface {
 			if($mode == 'first') return PermissionDB::where($column, $value)->first();
 			else return PermissionDB::where($column, $value)->get();
 		}catch(\Exception $e){
-			return ['error'=>true, 'message'=>$e->getMessage()];
+			return ['error'=>true];
 		}
 	}
     

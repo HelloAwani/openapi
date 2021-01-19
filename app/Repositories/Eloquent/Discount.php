@@ -10,12 +10,9 @@ class Discount implements DiscountInterface {
 		$offset = $start;
 		$result = DB::table('Discount')->leftJoin('PaymentMethod', 'PaymentMethod.PaymentMethodID', '=', 'Discount.PaymentMethodID')->select($display)->where('Discount.BranchID', $param->BranchID)->where('Discount.BrandID', $param->MainID)->where('Discount.Archived', null);
         if(!empty($keyword)){
-        	$result = $result->where(function ($query) use($keyword){
+        	$result = $result->where(function ($query) use($keyword, $column){
                 for($i = 0; $i < count($column);$i++){
-                    if($i = 0)
-                        $query->where(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like',"'%".$keyword."%'");
-                    else
-        		 	    $query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.$keyword.'%');
+        		 	$query->orWhere(DB::raw('lower(trim("'.$column[$i].'"::varchar))'),'like','%'.strtolower($keyword).'%');
                 }
         	});	
         }
