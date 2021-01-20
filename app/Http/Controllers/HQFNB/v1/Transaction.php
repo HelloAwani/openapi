@@ -2,10 +2,12 @@
 
 namespace Service\Http\Controllers\HQFNB\v1;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Service\Http\Requests;
 use Validator;
 use DB;
+use Service\Http\Services\v1\DimensionService;
 
 class Transaction extends \Service\Http\Controllers\_Heart
 {
@@ -39,52 +41,28 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 		$this->render();
 
+		$dimensionSvc = new DimensionService();
 		$tokenData = $this->_token_detail;
-		$request= $this->request;
-		$responseData = [];
+		$request = $this->request;
 
-		// get brand branch
-		$branchId = $this->getBranchId($tokenData->MainID);
+		// set default response
+		$this->response->Data = [];
 
-		// get all branch dimension within date range
-		$dateRange = '';
-		$this->getBranchDimension($branchId, $dateRange);
+		$dateRange = [
+			'start' => $request['DateStart'],
+			'end' => $request['DateEnd']
+		];
+		// get dimension
+		$result = $dimensionSvc->getDimension($tokenData->MainID, $dateRange);
 
-		$this->response->Transactions = $responseData;
+		if(!empty($result)){
+			$responseData = 'content';
+		}
+		else $responseData = [];
+		$this->response->Data = $responseData;
 
 		$this->reset_db();
 		$this->render(true);
 	}
 
-	/**
-	 * get brand branch
-	 *
-	 * @param [type] $brandId
-	 * @return void
-	 */
-	private function getBranchId($brandId, $limit = 0){
-		$query = DB::connection('res')
-		->table('Branch')
-		->select('BranchID')
-		->where('RestaurantID', '=', $brandId);
-
-		if($limit > 0){
-			$query->limit($limit);
-		}
-
-		$dbResult = $query->get();
-
-		$result = [];
-		if($dbResult->isNotEmpty()){
-			foreach ($dbResult as $value) {
-				$result[] = $value->BranchID;
-			}
-		}
-
-		return $result;
-	}
-
-	private function getBranchDimension($branchId, $dateRange){
-		
-	}
 }
