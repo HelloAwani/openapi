@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'main'),
+    'default' => env('DEF_DB_CONNECTION', 'main'),
 
     /*
     |--------------------------------------------------------------------------
@@ -59,7 +59,7 @@ return [
             'sslmode' => 'prefer',
         ],
 
-        'ser' => [
+        'res' => [
             'driver' => 'pgsql',
             'host' => $_ENV['DB_HOST_SER'],
             'port' => $_ENV['DB_PORT_SER'],
@@ -85,6 +85,18 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'rep' => [
+            'driver' => 'pgsql',
+            'host' => $_ENV['DB_HOST_REP'],
+            'port' => $_ENV['DB_PORT_REP'],
+            'database' => $_ENV['DB_DATABASE_REP'],
+            'username' => $_ENV['DB_USERNAME_REP'],
+            'password' => $_ENV['DB_PASSWORD_REP'],
+            'charset' => 'utf8',
+            'prefix' => '',
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+        ],
     ],
 
     /*

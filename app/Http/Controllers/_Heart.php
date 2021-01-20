@@ -463,7 +463,7 @@ class _Heart
     function query($clause, $params = array()){
         $this->last_running_query_clause = $clause;
         $this->last_running_query_param = $params;
-        $this->db = $this->db == "HQF" ? "RES" : $this->db;
+        $this->db = $this->db == "HQF" ? "res" : $this->db;
         $res = \DB::connection($this->db)->select( \DB::raw($clause), $params);
         return @$res;
     }
