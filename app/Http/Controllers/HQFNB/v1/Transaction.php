@@ -2,12 +2,8 @@
 
 namespace Service\Http\Controllers\HQFNB\v1;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Service\Http\Requests;
-use Validator;
-use DB;
-use Service\Http\Services\v1\DimensionService;
+use Service\Http\Services\v1\FNBDimension;
 
 class Transaction extends \Service\Http\Controllers\_Heart
 {
@@ -41,7 +37,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 		$this->render();
 
-		$dimensionSvc = new DimensionService();
+		$fnbDimension = new FNBDimension();
 		$tokenData = $this->_token_detail;
 		$request = $this->request;
 
@@ -53,10 +49,10 @@ class Transaction extends \Service\Http\Controllers\_Heart
 			'end' => $request['DateEnd']
 		];
 		// get dimension
-		$result = $dimensionSvc->getDimension($tokenData->MainID, $dateRange);
+		$result = $fnbDimension->getSalesDimension($tokenData, $dateRange);
 
 		if(!empty($result)){
-			$responseData = 'content';
+			$responseData = $result;
 		}
 		else $responseData = [];
 		$this->response->Data = $responseData;

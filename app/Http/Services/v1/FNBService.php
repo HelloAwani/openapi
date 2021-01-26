@@ -11,18 +11,19 @@ class FNBService
    }
 
    /**
-    * get brand branch
+    * get brand branch data
     *
     * @param integer $brandId
     * @param integer $limit
     * @return mixed
     */
-   public function getBranchId($brandId, $limit = 0)
+   public function getBranch($brandId, $limit = 0)
    {
       $query = DB::connection('res')
          ->table('Branch')
-         ->select('BranchID')
-         ->where('RestaurantID', '=', $brandId);
+         ->select(['BranchID', 'BranchName', 'Address'])
+         ->where('RestaurantID', '=', $brandId)
+         ->whereNull('Archived');
 
       if ($limit > 0) {
          $query->limit($limit);
@@ -30,13 +31,27 @@ class FNBService
 
       $dbResult = $query->get();
 
-      $result = [];
-      if ($dbResult->isNotEmpty()) {
-         foreach ($dbResult as $value) {
+      if($dbResult->isNotEmpty()){
+         return $dbResult;
+      }
+      else return [];
+   }
+
+   /**
+    * get brand branch id
+    *
+    * @param integer $brandId
+    * @param integer $limit
+    * @return mixed
+    */
+   public function getBranchId($branchData)
+   {
+      if ($branchData->isNotEmpty()) {
+         foreach ($branchData as $value) {
             $result[] = $value->BranchID;
          }
       }
 
-      return $result;
+      return $result ?? [];
    }
 }
