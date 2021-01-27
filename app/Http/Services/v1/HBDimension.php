@@ -12,7 +12,25 @@ class HBDimension
    protected $rawDimension = [];
 
    /**
-    * processed dimension / result
+    * dimension data index
+    * $dimension[x]->$dimensionDataIndex
+    *
+    * @var string
+    */
+   protected $dimensionDataIndex = "Data";
+
+   /**
+    * $dimensionData structure
+    * 1 = static value, ex: CategoryID in ItemSalesDetail
+    * 2 = add value ( + ), ex: TotalSales
+    * 3 = identifier, unique value, only work on nested array, ex: PaymentMethodID
+    *
+    * @var array
+    */
+   protected $dimensionStructure = [];
+   protected $structure= [];
+   /**
+    * final result
     *
     * @var array
     */
@@ -21,6 +39,171 @@ class HBDimension
    public function __construct()
    {
       // parent::__construct();
+      $this->structure = $this->parseStructure();
+   }
+
+   /**
+    * merge dimensionData according to dimension structure recursively
+    *
+    * @param array $currDimension
+    * @param array $newDimension
+    * @param string $parent parent index, separated by comma, ex: 'ItemSalesDetail,ModifierDetail'
+    * @return void
+    */
+   // protected function mergeDimension2($currDimension, $newDimension, $parent = [])
+   // {
+   //    $result = $currDimension;
+   //    foreach ($newDimension as $index => $value) {
+   //       if (is_array($value) && isset($value[0])) {
+   //          $parent[] = $index;
+   //          $temp = end($parent);
+   //          $this->mergeDimension2($currDimension[$temp], $newDimension[$temp], $parent);
+   //       } else {
+   //          $dataType = $this->dimensionStructure;
+
+   //          // process data structure parent
+   //          if ($parent) {
+   //             foreach ($parent as $v) {
+   //                $dataType = $dataType[$v];
+   //             }
+   //          }
+   //          // check if identifier exist
+   //          $identifierIndex = array_search(3, $dataType);
+
+   //          // set $dataType
+   //          if (!empty($parent)) {
+   //             foreach ($value as $index2 => $value2) {
+   //                # code...
+   //                $dataType = $dataType[$index2];
+   //             }
+
+   //             // if identifier found, and parent is set, search for existing data
+   //             if (!empty($identifierIndex) && !empty($parent)) {
+   //                // search for existing data
+   //                foreach ($newDimension as $k => $v) {
+   //                }
+   //             }
+   //          } else {
+   //             $dataType = $dataType[$index];
+   //             $result[$index] = $this->processDimensionData($dataType, $currDimension[$index], $value);
+
+   //             // merge data
+   //             // switch ($dataType) {
+   //             //    case '1':
+   //             //       # do nothing
+   //             //       break;
+
+   //             //    case '2':
+   //             //       // add new value to old value
+   //             //       $result[$index] = strval($currDimension[$index] + $value);
+   //             //       break;
+
+   //             //    case '3':
+   //             //       # code...
+   //             //       break;
+
+   //             //    default:
+   //             //       # code...
+   //             //       break;
+   //             // }
+   //          }
+   //       }
+   //    }
+   //    return $result;
+   // }
+
+   protected function mergeDimension3($old, $new, $parent = []){
+      // search for identifier in current array level
+      if(empty($parent)){
+         $identifierIndex = array_search(3, $this->dimensionStructure);
+         $indexToProcess = $this->structure;
+         $filter = $this->getFilter($this->dimensionStructure);
+      }
+      else{
+         $currJsonStructure = $this->dimensionStructure;
+         $indexToProcess = $this->structure;
+         foreach ($parent as $k => $v) {
+            $currJsonStructure = $currJsonStructure[$v] ?? [];
+            $indexToProcess = $indexToProcess[$v] ?? [];
+         }
+         $identifierIndex = array_search(3, $currJsonStructure);
+         $filter = $this->getFilter($currJsonStructure);
+      }
+      
+      if(empty($identifierIndex)){
+         $data1 = $this->mergeDimension($old, $new, $filter);
+      }
+      else{
+         if(empty($parent)){}
+         $data1 = $this->mergeDimensionWithId($old, $new, $identifierIndex, $filter);
+      }
+      
+      // search if array in this level have more array
+      foreach ($indexToProcess as $key => $value) {
+         $a = $parent;
+         $a[] = $key;
+         $data1[$key] = $this->mergeDimension3($old, $new, $a);
+      }
+
+      return $data1;
+   }
+
+   /**
+    * get filter for dimension parsing
+    *
+    * @param array $structure
+    * @return void
+    */
+   private function getFilter($structure){
+      $a = [];
+      foreach ($structure as $key => $value) {
+         if($value != 2){
+            $a[] = $key;
+         }
+      }
+      return $a;
+   }
+
+   protected function parseStructure($structure = []){
+      if(empty($structure)) $structure = $this->dimensionStructure;
+      $result = [];
+      foreach ($structure as $key => $value) {
+         # code...
+         if(is_array($value)){
+            $result[$key] = [];
+            $temp = $this->parseStructure($value);
+            if(!empty($temp)){
+               $result[$key] = $temp;
+            }
+         }
+         echo "S";
+      }
+      return $result;
+   }
+
+   private function processDimensionData($type, $curr, $new=null){
+      switch ($type) {
+         case '1':
+            # do nothing
+            $result = strval($curr);
+            break;
+
+         case '2':
+            // add new value to old value
+            $result = strval($curr + $new);
+            break;
+
+         case '3':
+            # code...
+            $result = strval($curr);
+            break;
+
+         default:
+            // run function
+            break;
+      }
+
+      return $result;
    }
 
    /**

@@ -11,7 +11,50 @@ class FNBDimension extends HBDimension
 {
    public function __construct()
    {
+      $this->dimensionStructure = [
+         // "BranchID" => 1,
+         // "BranchName" => 1,
+         // "Alamat" => 1,
+         // "Data" => [
+         "VAT" => 2,
+         "Bill" => 2,
+         "Changes" => 2,
+         "Discount" => 2,
+         "Rounding" => 2,
+         "TotalBill" => 2,
+         "TotalItem" => 2,
+         "ServiceTax" => 2,
+         "GuestNumber" => 2,
+         "TotalBilling" => 2,
+         "TotalPayment" => 2,
+         "PaymentDetail" => [
+            "PaymentMethodID" => 3,
+            "Payment" => 2,
+            "PaymentCount" => 2,
+            "StartToFinish" => 2
+         ],
+         "TotalModifier" => 2,
+         "TotalItemSales" => 2,
+         "ItemSalesDetail" => [
+            "MenuID" => 3,
+            "Qty" => 2,
+            "AvgPrice" => 'countAvgPrice',
+            "Discount" => 2,
+            "SubTotal" => 2,
+            "CategoryID" => 1,
+            "StartToFinish" => 2,
+            "ModifierDetail" => [
+               "ModifierID" => 1,
+               "ModifierTotal" => 2
+            ]
+         ],
+         "TotalDiscountItem" => 2,
+         "TOtalModifierSales" => 2
+         // ]
+      ];
+
       parent::__construct();
+
    }
 
    /**
@@ -113,32 +156,30 @@ class FNBDimension extends HBDimension
    public function parseSalesDimensionData($branch)
    {
       foreach ($this->rawDimension as $currDimension) {
-         // check filter
-         // if(!empty($filter)){
-         //    // skip current data if branch isn't in filter
-         //    if(!in_array($value->branch_id, $filter)) continue;
-         // }
-
-         // extract date only from timeframe
-         $currTimeframe = Carbon::parse($currDimension->timeframe)->toDateString();
          $currDimension->data = json_decode($currDimension->data);
-
+         
          $isNew = true;
-
+         
          // update dimension
          // search if the branch already exist in dimension
          foreach ($this->dimension as $index => $currValue) {
             if ($currValue->BranchID == $currDimension->branch_id) {
                // update dimension
                $isNew = false;
-
+               
                // prepare data to be merged
                $oldData = (array) $this->dimension[$index]->Data;
-               $tempCurrData = (array) $currDimension->data;
+               $currDimData = (array) $currDimension->data;
+               
+               // $test = $this->mergeDimension2((array) $currValue->Data, $currDimData);
+               // $this->mergeDimension3((array) $currValue->Data, $currDimData);
+               
+               $newData = $this->mergeDimension($oldData, $currDimData, ['PaymentDetail', 'ItemSalesDetail']);
+               
+               $newData['PaymentDetail'] = $this->mergeDimensionWithId($oldData['PaymentDetail'], $currDimData['PaymentDetail'], 'PaymentMethodID');
+               $newData['ItemSalesDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail'], $currDimData['ItemSalesDetail'], 'MenuID', ['CategoryID', 'ModifierDetail', 'AvgPrice']);
 
-               $newData = $this->mergeDimension($oldData, $tempCurrData, ['PaymentDetail', 'ItemSalesDetail']);
-               $newData['PaymentDetail'] = $this->mergeDimensionWithId($oldData['PaymentDetail'], $tempCurrData['PaymentDetail'], 'PaymentMethodID');
-               $newData['ItemSalesDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail'], $tempCurrData['ItemSalesDetail'], 'MenuID', ['CategoryID', 'ModifierDetail', 'AvgPrice']);
+               $newData['ItemSalesDetail']['ModifierDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail']['ModifierDetail'], $currDimData['ItemSalesDetail']['ModifierDetail'], 'ModifierName');
                $this->dimension[$index]->Data = $newData;
 
                continue;
@@ -162,7 +203,7 @@ class FNBDimension extends HBDimension
                   break;
                }
             }
-            if(empty($branchData)){
+            if (empty($branchData)) {
                $fnbSvc = new FNBService();
                Log::debug($currDimension->branch_id . '|' . json_encode($fnbSvc->getBranchId($branch)));
             }
