@@ -179,7 +179,7 @@ class FNBDimension extends HBDimension
                $newData['PaymentDetail'] = $this->mergeDimensionWithId($oldData['PaymentDetail'], $currDimData['PaymentDetail'], 'PaymentMethodID');
                $newData['ItemSalesDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail'], $currDimData['ItemSalesDetail'], 'MenuID', ['CategoryID', 'ModifierDetail', 'AvgPrice']);
 
-               $newData['ItemSalesDetail']['ModifierDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail']['ModifierDetail'], $currDimData['ItemSalesDetail']['ModifierDetail'], 'ModifierName');
+               // $newData['ItemSalesDetail']['ModifierDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail']['ModifierDetail'], $currDimData['ItemSalesDetail']['ModifierDetail'], 'ModifierName');
                $this->dimension[$index]->Data = $newData;
 
                continue;
@@ -225,6 +225,8 @@ class FNBDimension extends HBDimension
       $result = $oldData;
       foreach ($newData as $new) {
          $isNew = true;
+
+         // search for existing data
          foreach ($oldData as $oldIndex => $old) {
             if ($old->$identifier == $new->$identifier) {
                $isNew = false;
@@ -245,6 +247,33 @@ class FNBDimension extends HBDimension
                   $result[$oldIndex]->$dataIndex = strval($result[$oldIndex]->$dataIndex + $dataValue);
                }
             }
+
+            // if identifer = MenuID do merge for the subdata
+            if($identifier == 'MenuID'){
+               foreach ($new->ModifierDetail as $modKey => $modValue) {
+                  $newModifier = true;
+                  foreach ($result[$oldIndex]->ModifierDetail as $key => $value) {
+                     if($value->ModifierName == $modValue->ModifierName){
+                        $newModifier = false;
+
+                        break;
+                     }
+                  }
+
+                  // insert new modifier
+                  if($newModifier){
+                     $result[$oldIndex]->ModifierDetail[] = $modValue;
+                  }
+                  else{
+                     // update modifier
+                     $temp1 = $result[$oldIndex]->ModifierDetail[$key];
+                     $temp1->TotalSales = strval($temp1->TotalSales + $modValue->TotalSales);
+                     $temp1->QtyModifier = strval($temp1->QtyModifier + $modValue->QtyModifier);
+                     $result[$oldIndex]->ModifierDetail[$key] = $temp1;
+                  }
+               }
+            }
+               # code...
             // $result[$oldIndex] = $temp;
          }
       }
