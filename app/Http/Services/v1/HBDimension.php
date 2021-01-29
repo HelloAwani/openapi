@@ -176,7 +176,6 @@ class HBDimension
                $result[$key] = $temp;
             }
          }
-         echo "S";
       }
       return $result;
    }
@@ -267,4 +266,73 @@ class HBDimension
       }
       return $result;
    }
+
+    /**
+    * merge dimension data that have id, example: ItemSalesDetail (for each MenuID)
+    *
+    * @param array $oldData
+    * @param array $newData array of data to be added
+    * @param string $identifier id identifier in data, ex: MenuID, PaymentMethodID
+    * @param array $filter array of index that will be ignored from $newData, ex: avgPrice
+    * @return array
+    */
+    protected function mergeDimensionWithId2($oldData, $newData, $identifier, $filter = [])
+    {
+       $result = $oldData;
+       foreach ($newData as $new) {
+          $isNew = true;
+ 
+          // search for existing data
+          foreach ($oldData as $oldIndex => $old) {
+             if ($old->$identifier == $new->$identifier) {
+                $isNew = false;
+                $currData = $oldData[$oldIndex];
+                break;
+             }
+          }
+ 
+          if ($isNew) {
+             // insert new data
+             $result[] = $new;
+          } else {
+             // update data
+             $result[$oldIndex] = $currData;
+             foreach ($new as $dataIndex => $dataValue) {
+                // process data if it's not identifier and not in filter
+                if ($dataIndex != $identifier && !in_array($dataIndex, $filter)) {
+                   $result[$oldIndex]->$dataIndex = strval($result[$oldIndex]->$dataIndex + $dataValue);
+                }
+             }
+ 
+             // if identifer = MenuID do merge for the subdata
+             if($identifier == 'MenuID'){
+                foreach ($new->ModifierDetail as $modKey => $modValue) {
+                   $newModifier = true;
+                   foreach ($result[$oldIndex]->ModifierDetail as $key => $value) {
+                      if($value->ModifierName == $modValue->ModifierName){
+                         $newModifier = false;
+ 
+                         break;
+                      }
+                   }
+ 
+                   // insert new modifier
+                   if($newModifier){
+                      $result[$oldIndex]->ModifierDetail[] = $modValue;
+                   }
+                   else{
+                      // update modifier
+                      $temp1 = $result[$oldIndex]->ModifierDetail[$key];
+                      $temp1->TotalSales = strval($temp1->TotalSales + $modValue->TotalSales);
+                      $temp1->QtyModifier = strval($temp1->QtyModifier + $modValue->QtyModifier);
+                      $result[$oldIndex]->ModifierDetail[$key] = $temp1;
+                   }
+                }
+             }
+                # code...
+             // $result[$oldIndex] = $temp;
+          }
+       }
+       return $result;
+    }
 }
