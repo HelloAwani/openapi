@@ -3,6 +3,7 @@
 namespace Service\Http\Controllers\HQFNB\v1;
 
 use Illuminate\Http\Request;
+use Validator;
 use Service\Http\Services\v1\FNBDimension;
 
 class Transaction extends \Service\Http\Controllers\_Heart
@@ -32,10 +33,13 @@ class Transaction extends \Service\Http\Controllers\_Heart
 			'DateStart' => 'required|date_format:Y-m-d',
 			'DateEnd' => 'required|date_format:Y-m-d',
 		];
-		//standar validator
-		$this->validator($rules);
 
-		$this->render();
+		//validation
+		$validator = Validator::make($this->request, $rules);
+		if ($validator->fails()) {
+			$error = $validator->errors();	
+			return response()->json($error);
+		}
 
 		$fnbDimension = new FNBDimension();
 		$tokenData = $this->_token_detail;
@@ -48,6 +52,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 			'start' => $request['DateStart'],
 			'end' => $request['DateEnd']
 		];
+		
 		// get dimension
 		$result = $fnbDimension->getSalesDimension($tokenData, $dateRange);
 
@@ -57,8 +62,9 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		else $responseData = [];
 		$this->response->Data = $responseData;
 
-		$this->reset_db();
-		$this->render(true);
+		return response()->json($this->response);
+		// $this->reset_db();
+		// $this->render(true);
 	}
 
 }

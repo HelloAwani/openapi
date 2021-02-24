@@ -28,7 +28,7 @@ class HBDimension
     * @var array
     */
    protected $dimensionStructure = [];
-   protected $structure= [];
+   protected $structure = [];
    /**
     * final result
     *
@@ -112,14 +112,14 @@ class HBDimension
    //    return $result;
    // }
 
-   protected function mergeDimension3($old, $new, $parent = []){
+   protected function mergeDimension3($old, $new, $parent = [])
+   {
       // search for identifier in current array level
-      if(empty($parent)){
+      if (empty($parent)) {
          $identifierIndex = array_search(3, $this->dimensionStructure);
          $indexToProcess = $this->structure;
          $filter = $this->getFilter($this->dimensionStructure);
-      }
-      else{
+      } else {
          $currJsonStructure = $this->dimensionStructure;
          $indexToProcess = $this->structure;
          foreach ($parent as $k => $v) {
@@ -129,15 +129,15 @@ class HBDimension
          $identifierIndex = array_search(3, $currJsonStructure);
          $filter = $this->getFilter($currJsonStructure);
       }
-      
-      if(empty($identifierIndex)){
+
+      if (empty($identifierIndex)) {
          $data1 = $this->mergeDimension($old, $new, $filter);
-      }
-      else{
-         if(empty($parent)){}
+      } else {
+         if (empty($parent)) {
+         }
          $data1 = $this->mergeDimensionWithId($old, $new, $identifierIndex, $filter);
       }
-      
+
       // search if array in this level have more array
       foreach ($indexToProcess as $key => $value) {
          $a = $parent;
@@ -154,25 +154,27 @@ class HBDimension
     * @param array $structure
     * @return void
     */
-   private function getFilter($structure){
+   private function getFilter($structure)
+   {
       $a = [];
       foreach ($structure as $key => $value) {
-         if($value != 2){
+         if ($value != 2) {
             $a[] = $key;
          }
       }
       return $a;
    }
 
-   protected function parseStructure($structure = []){
-      if(empty($structure)) $structure = $this->dimensionStructure;
+   protected function parseStructure($structure = [])
+   {
+      if (empty($structure)) $structure = $this->dimensionStructure;
       $result = [];
       foreach ($structure as $key => $value) {
          # code...
-         if(is_array($value)){
+         if (is_array($value)) {
             $result[$key] = [];
             $temp = $this->parseStructure($value);
-            if(!empty($temp)){
+            if (!empty($temp)) {
                $result[$key] = $temp;
             }
          }
@@ -180,7 +182,8 @@ class HBDimension
       return $result;
    }
 
-   private function processDimensionData($type, $curr, $new=null){
+   private function processDimensionData($type, $curr, $new = null)
+   {
       switch ($type) {
          case '1':
             # do nothing
@@ -267,7 +270,7 @@ class HBDimension
       return $result;
    }
 
-    /**
+   /**
     * merge dimension data that have id, example: ItemSalesDetail (for each MenuID)
     *
     * @param array $oldData
@@ -276,63 +279,89 @@ class HBDimension
     * @param array $filter array of index that will be ignored from $newData, ex: avgPrice
     * @return array
     */
-    protected function mergeDimensionWithId2($oldData, $newData, $identifier, $filter = [])
-    {
-       $result = $oldData;
-       foreach ($newData as $new) {
-          $isNew = true;
- 
-          // search for existing data
-          foreach ($oldData as $oldIndex => $old) {
-             if ($old->$identifier == $new->$identifier) {
-                $isNew = false;
-                $currData = $oldData[$oldIndex];
-                break;
-             }
-          }
- 
-          if ($isNew) {
-             // insert new data
-             $result[] = $new;
-          } else {
-             // update data
-             $result[$oldIndex] = $currData;
-             foreach ($new as $dataIndex => $dataValue) {
-                // process data if it's not identifier and not in filter
-                if ($dataIndex != $identifier && !in_array($dataIndex, $filter)) {
-                   $result[$oldIndex]->$dataIndex = strval($result[$oldIndex]->$dataIndex + $dataValue);
-                }
-             }
- 
-             // if identifer = MenuID do merge for the subdata
-             if($identifier == 'MenuID'){
-                foreach ($new->ModifierDetail as $modKey => $modValue) {
-                   $newModifier = true;
-                   foreach ($result[$oldIndex]->ModifierDetail as $key => $value) {
-                      if($value->ModifierName == $modValue->ModifierName){
-                         $newModifier = false;
- 
-                         break;
-                      }
-                   }
- 
-                   // insert new modifier
-                   if($newModifier){
-                      $result[$oldIndex]->ModifierDetail[] = $modValue;
-                   }
-                   else{
-                      // update modifier
-                      $temp1 = $result[$oldIndex]->ModifierDetail[$key];
-                      $temp1->TotalSales = strval($temp1->TotalSales + $modValue->TotalSales);
-                      $temp1->QtyModifier = strval($temp1->QtyModifier + $modValue->QtyModifier);
-                      $result[$oldIndex]->ModifierDetail[$key] = $temp1;
-                   }
-                }
-             }
-                # code...
-             // $result[$oldIndex] = $temp;
-          }
-       }
-       return $result;
-    }
+   protected function mergeDimensionWithId2($oldData, $newData, $identifier, $filter = [])
+   {
+      $result = $oldData;
+      foreach ($newData as $new) {
+         $isNew = true;
+
+         // search for existing data
+         foreach ($oldData as $oldIndex => $old) {
+            if ($old->$identifier == $new->$identifier) {
+               // found existing data
+               $isNew = false;
+               $currData = $oldData[$oldIndex];
+               break;
+            }
+         }
+
+         if ($isNew) {
+            // insert new data
+            $result[] = $new;
+         } else {
+            // update data
+            $result[$oldIndex] = $currData;
+            foreach ($new as $dataIndex => $dataValue) {
+               // process data if it's not identifier and not in filter
+               if ($dataIndex != $identifier && !in_array($dataIndex, $filter)) {
+                  $result[$oldIndex]->$dataIndex = strval($result[$oldIndex]->$dataIndex + $dataValue);
+               }
+            }
+
+            //  check for subarray
+            // if identifer = MenuID do merge for the subdata
+            if ($identifier == 'MenuID') {
+               foreach ($new->ModifierDetail as $modValue) {
+                  $newModifier = true;
+                  foreach ($result[$oldIndex]->ModifierDetail as $key => $value) {
+                     if ($value->ModifierName == $modValue->ModifierName) {
+                        $newModifier = false;
+
+                        break;
+                     }
+                  }
+
+                  // insert new modifier
+                  if ($newModifier) {
+                     $result[$oldIndex]->ModifierDetail[] = $modValue;
+                  } else {
+                     // update modifier
+                     $temp1 = $result[$oldIndex]->ModifierDetail[$key];
+                     $temp1->TotalSales = strval($temp1->TotalSales + $modValue->TotalSales);
+                     $temp1->QtyModifier = strval($temp1->QtyModifier + $modValue->QtyModifier);
+                     $result[$oldIndex]->ModifierDetail[$key] = $temp1;
+                  }
+               }
+            }
+            # code...
+            // $result[$oldIndex] = $temp;
+         }
+      }
+      return $result;
+   }
+
+   protected function processDimensionSubData($new){
+      $result = [];
+      foreach ($new->ModifierDetail as $modKey => $modValue) {
+         $newModifier = true;
+         foreach ($result[$oldIndex]->ModifierDetail as $key => $value) {
+            if ($value->ModifierName == $modValue->ModifierName) {
+               $newModifier = false;
+
+               break;
+            }
+         }
+
+         // insert new modifier
+         if ($newModifier) {
+            $result[$oldIndex]->ModifierDetail[] = $modValue;
+         } else {
+            // update modifier
+            $temp1 = $result[$oldIndex]->ModifierDetail[$key];
+            $temp1->TotalSales = strval($temp1->TotalSales + $modValue->TotalSales);
+            $temp1->QtyModifier = strval($temp1->QtyModifier + $modValue->QtyModifier);
+            $result[$oldIndex]->ModifierDetail[$key] = $temp1;
+         }
+      }
+   }
 }

@@ -712,7 +712,11 @@ class _Heart
         
     }
 
-    //validate  token   request
+    /**
+     * Validate token request from header
+     *
+     * @return void
+     */
     public function validate_request(){
 
         $header = trim(@getallheaders()["Authorization"]);

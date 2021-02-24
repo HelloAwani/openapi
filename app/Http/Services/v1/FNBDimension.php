@@ -72,7 +72,6 @@ class FNBDimension extends HBDimension
       // get brand branch
       $branch = $fnbSvc->getBranch($brandId);
       // $branchId = $fnbSvc->getBranchId($branch);
-
       if (empty($branch)) {
          return false;
       }
@@ -173,11 +172,11 @@ class FNBDimension extends HBDimension
                
                // $test = $this->mergeDimension2((array) $currValue->Data, $currDimData);
                // $this->mergeDimension3((array) $currValue->Data, $currDimData);
-               
                $newData = $this->mergeDimension($oldData, $currDimData, ['PaymentDetail', 'ItemSalesDetail']);
                
                $newData['PaymentDetail'] = $this->mergeDimensionWithId($oldData['PaymentDetail'], $currDimData['PaymentDetail'], 'PaymentMethodID');
                $newData['ItemSalesDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail'], $currDimData['ItemSalesDetail'], 'MenuID', ['CategoryID', 'ModifierDetail', 'AvgPrice']);
+               $test = $this->mergeDimensionWithId2($oldData['ItemSalesDetail'], $currDimData['ItemSalesDetail'], 'MenuID', ['CategoryID', 'ModifierDetail', 'AvgPrice']);
 
                // $newData['ItemSalesDetail']['ModifierDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail']['ModifierDetail'], $currDimData['ItemSalesDetail']['ModifierDetail'], 'ModifierName');
                $this->dimension[$index]->Data = $newData;
