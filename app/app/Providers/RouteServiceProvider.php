@@ -44,10 +44,10 @@ class RouteServiceProvider extends ServiceProvider
 
 
 
-        //add Device routes
-        $this->mapApiDeviceRoutes("v1");
-        $this->mapApiDeviceRoutes("v2");
-        $this->mapApiDeviceRoutes("v3");
+        // //add Device routes
+        // $this->mapApiDeviceRoutes("v1");
+        // $this->mapApiDeviceRoutes("v2");
+        // $this->mapApiDeviceRoutes("v3");
 
         //
     }
@@ -88,15 +88,15 @@ class RouteServiceProvider extends ServiceProvider
 //        });
 //    }
     
-    protected function mapApiDeviceRoutes($version)
-    {
-        $name = "Service\Http\Controllers\Device\\".$version;
-        $this->device_version = $version;
-        Route::group([
-            'namespace' => $name,
-            'prefix' => 'device',
-        ], function ($router) {
-            require base_path('routes/device/'.$this->device_version.'.php');
-        });
-    }
+    // protected function mapApiDeviceRoutes($version)
+    // {
+    //     $name = "Service\Http\Controllers\Device\\".$version;
+    //     $this->device_version = $version;
+    //     Route::group([
+    //         'namespace' => $name,
+    //         'prefix' => 'device',
+    //     ], function ($router) {
+    //         require base_path('routes/device/'.$this->device_version.'.php');
+    //     });
+    // }
 }
