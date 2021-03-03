@@ -122,8 +122,8 @@ class FNBDimension extends HBDimension
     * get BRAND dimension within date range
     *
     * @param array $brandId main_id
+    * @param array $dimensionName array of dimension name
     * @param array $dateRange[start, end]
-    * @param string $dimensionName
     * @return mixed
     */
    public function getBrandDimension($brandId, $dimensionName, $dateRange)
@@ -135,7 +135,7 @@ class FNBDimension extends HBDimension
       // run query
       $result = DB::connection('rep')
          ->table('dimension')
-         ->where('dimension_name', '=', $dimensionName)
+         ->whereIn('dimension_name', $dimensionName)
          ->where('main_id', '=', $brandId)
          ->whereBetween('timeframe', [$dateRange['start'], $dateRange['end']])
          ->get();
