@@ -243,19 +243,24 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		$recipients = [
 			'fK7yKynXRt6h2CVoKdBLlX:APA91bH9MCtpRHUfCVRwFHtrz8UMV-NOVWUvSzQIeDl-QfPg5PsaBV1CUHccIBQq7Q-r8J2HWwRHwe-F4oAXkZLO5WjLfTI6tncXjVHrfeg7OZhy0Sj6mSqIy1-ZjXXMaU5k3r_zKcA_'
 		];
+		$data = $this->request['Data'];
+		$notif = $this->request['Notification'];
+		$data = json_decode(json_encode($data),true);
+		$notif = json_decode(json_encode($notif),true);
 		
 		$res = fcm()
 		->to($recipients) // $recipients must an array
 		->priority('high')
 		->timeToLive(0)
-		->data([
-			'title' => 'ini test Data woi',
-			'body' => 'This is a test of FCM Data',
-		])
-		->notification([
-			'title' => 'Erwin, ini test notif',
-			'body' => 'This is a test of FCM Notif',
-		])
+		->data($data)->notification($notif)
+		// ->data([
+		// 	'title' => 'INI CERITANYA EXT TRANSACTION',
+		// 	'body' => 'INI CERITANYA ID NYA',
+		// ])
+		// ->notification([
+		// 	'title' => 'WOI NOTIF WOI',
+		// 	'body' => 'WOI NOTIF WOI',
+		// ])
 		->send();
 		print_r(json_encode($res));die();
 	}
