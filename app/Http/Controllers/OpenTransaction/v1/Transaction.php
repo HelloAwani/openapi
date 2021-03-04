@@ -206,7 +206,24 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		
 			}
 
-
+			if($t->Plattform =='Android'){
+				$recipients = array(
+					$t->DeviceToken
+				);
+				$res = fcm()
+					->to($recipients) // $recipients must an array
+					->priority('high')
+					->timeToLive(0)
+					->data([
+						'title' => 'ExtTransactionID',
+						'body' => $ext_trans_id,
+					])
+					->notification([
+						'title' => 'New Order',
+						'body' => 'Grabfood new order',
+					])
+					->send();
+			}
 		}
 
 		
@@ -220,6 +237,28 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		$this->render(true);
 	}
 
+	public function test_android(){
+		
+		
+		$recipients = [
+			'fK7yKynXRt6h2CVoKdBLlX:APA91bH9MCtpRHUfCVRwFHtrz8UMV-NOVWUvSzQIeDl-QfPg5PsaBV1CUHccIBQq7Q-r8J2HWwRHwe-F4oAXkZLO5WjLfTI6tncXjVHrfeg7OZhy0Sj6mSqIy1-ZjXXMaU5k3r_zKcA_'
+		];
+		
+		$res = fcm()
+		->to($recipients) // $recipients must an array
+		->priority('high')
+		->timeToLive(0)
+		->data([
+			'title' => 'ini test Data woi',
+			'body' => 'This is a test of FCM Data',
+		])
+		->notification([
+			'title' => 'Erwin, ini test notif',
+			'body' => 'This is a test of FCM Notif',
+		])
+		->send();
+		print_r(json_encode($res));die();
+	}
 
 	public function fetch(){
 
