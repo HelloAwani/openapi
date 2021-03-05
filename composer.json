@@ -10,7 +10,8 @@
         "league/flysystem-aws-s3-v3": "^1.0",
         "unicodeveloper/laravel-password": "1.0.*",
         "mongodb/mongodb": "^1.0.0",
-        "jenssegers/mongodb": "*"
+        "jenssegers/mongodb": "*",
+        "kawankoding/laravel-fcm": "^0.2.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

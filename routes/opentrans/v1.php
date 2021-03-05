@@ -27,6 +27,7 @@ Route::group(['prefix' => $version.'/master'], function () {
 Route::group(['prefix' => $version.'/transaction'], function () {
     Route::post('submit', 'Transaction@submit');
     Route::post('fetch', 'Transaction@fetch');
+    Route::post('test_android', 'Transaction@test_android');
 });
 Route::group(['prefix' => $version.'/tun'], function () {
     Route::post('hellobill', 'Tunnel@fetch_transaction');
