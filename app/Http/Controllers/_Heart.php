@@ -636,7 +636,7 @@ class _Heart
     
     public function validator($rules,$must_validate_token=false){
         if(env('APP_DEBUG')){
-            $this->response->_drequest = $this->request;
+            //$this->response->_drequest = $this->request;
         }
         if(@$this->request["_language_id"]!=null){
             $this->language_string = $this->request["_language_id"];
@@ -719,10 +719,46 @@ class _Heart
 
         $this->validator([]);
 
+
+        if(in_array($this->enforce_product, ["ORES"])){
+
+            $this->db = "RES";
+
+            $branch = @$this->query('SELECT *  FROM  "Branch"  where "BranchID" = :id ',
+            ["id"=>$this->request["BranchID"]])[0];
+            $this->reset_db();
+            $this->outlet_info = $branch;
+            if((@$branch->Active)!='1'  
+                && !in_array($this->enforce_product, ["HQF"])
+                ){
+                $this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x5001)");   
+            }
+    
+            $this->render();
+
+            if($header!="PASWORDDDDDDDD"){
+                $this->add_error("Authorization", "Token", "Key Mismatch");   
+                $this->render();
+            }
+
+            $this->_token_detail->ProductID = "RES";
+            $this->_token_detail->BranchID = $branch->BranchID;
+            $this->_token_detail->MainID = $branch->RestaurantID;
+            return;
+        }
+
+
+
         if($header==null){  
             $this->add_error("Authorization", $header, "Authorization has ecountered a failure (x1078)");   
         }
         $this->render();
+
+
+
+
+
+
 
         $header = explode(' ', $header);
 

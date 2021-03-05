@@ -11,7 +11,9 @@
         "unicodeveloper/laravel-password": "1.0.*",
         "mongodb/mongodb": "^1.0.0",
         "jenssegers/mongodb": "*",
-        "kawankoding/laravel-fcm": "^0.2.0"
+        "kawankoding/laravel-fcm": "^0.2.0",
+        "edujugon/push-notification": "v3.0.0",
+        "edamov/pushok": "^0.8.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
