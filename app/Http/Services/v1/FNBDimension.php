@@ -89,6 +89,10 @@ class FNBDimension extends HBDimension
       return $this->dimension;
    }
 
+   public function getIngredientDimension($tokenData, $date){
+
+   }
+
    /**
     * get BRANCH dimension within date range
     *

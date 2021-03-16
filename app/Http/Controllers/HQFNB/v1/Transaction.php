@@ -61,4 +61,41 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		$this->render(true);
 	}
 
+	public function fetchIngredient()
+	{
+		$this->validate_request();
+		$this->db = 'res';
+
+		$rules = [
+			'DateStart' => 'required|date_format:Y-m-d',
+			'DateEnd' => 'required|date_format:Y-m-d',
+		];
+		//standar validator
+		$this->validator($rules);
+
+		$this->render();
+
+		$fnbDimension = new FNBDimension();
+		$tokenData = $this->_token_detail;
+		$request = $this->request;
+
+		// set default response
+		$this->response->Data = [];
+
+		$dateRange = [
+			'start' => $request['DateStart'],
+			'end' => $request['DateEnd']
+		];
+		// get dimension
+		$result = $fnbDimension->getSalesDimension($tokenData, $dateRange);
+
+		if(!empty($result)){
+			$responseData = $result;
+		}
+		else $responseData = [];
+		$this->response->Data = $responseData;
+
+		$this->reset_db();
+		$this->render(true);
+	}
 }
