@@ -62,9 +62,55 @@ class Master extends \Service\Http\Controllers\_Heart
 		);
 
 		foreach($menu as $m){
-			$mc["c.".$m->CategoryID]->Menu [] = $m;
+			if(@$mc["c.".$m->CategoryID]!=null){
+
+				$m->Modifiers = $this->query('
+				select mg."Min", mg."Max", mg."ModifierGroupID", mg."ModifierGroupName" , mi."ModifierItemID", mi."ModifierName" , mi."PriceModifier"  from "MenuModifier" mm 
+				join "ModifierGroup" mg on mg."ModifierGroupID" = mm."ModifierGroupID" 
+				join "ModifierItem" mi on mg ."ModifierGroupID" = mi."ModifierGroupID" 
+				where mm."MenuID"  = :mg
+				order by 1, 3 
+				', array("mg"=>$m->MenuID));
+				$mc["c.".$m->CategoryID]->Menu [] = $m;
+			}
 		}
 
+
+		$this->response->ModifierGroups = $this->query('
+			SELECT "RefHQ", "ModifierGroupID", "ModifierGroupName", coalesce("Min",0)as "Min", coalesce("Max",0)as "Max"
+			FROM "ModifierGroup" 
+			WHERE "ModifierGroup"."BranchID" = :bid
+			and ("Archived" = \'N\' or "Archived" is null)
+			', array("bid"=>$this->_token_detail->BranchID));
+
+		foreach ($this->response->ModifierGroups as $dmodifier) {
+			$dmodifier->ModifierItems = $this->query('
+			SELECT "RefHQ", "ModifierItemID", 
+			"ModifierName",  "PriceModifier"
+			FROM "ModifierItem" 
+
+			WHERE "ModifierItem"."BranchID" = :bid
+			AND "ModifierItem"."ModifierGroupID" = :mg
+			and ("ModifierItem"."Archived" = \'N\' or  "ModifierItem"."Archived"  Is Null)
+			', array("bid"=>$this->_token_detail->BranchID, "mg"=>$dmodifier->ModifierGroupID));
+
+			foreach ($dmodifier->ModifierItems as $dmd) {
+				$dmd->PriceModifier = round($dmd->PriceModifier,0)."";
+			}
+
+		}
+
+		foreach ($this->response->ModifierGroups as $dmenu) {
+			$dmenu->Menus = $this->query('SELECT
+			"Menu"."MenuID", "MenuName"
+			FROM "Menu" 
+			LEFT JOIN "MenuModifier" on "Menu"."MenuID" = "MenuModifier"."MenuID"
+			WHERE 
+			COALESCE("Menu"."Archived",\'N\') <> \'Y\' and
+			"MenuModifier"."BranchID" = :bid and
+			"ModifierGroupID" = :mg
+			', array("bid"=>$this->_token_detail->BranchID, "mg"=>$dmodifier->ModifierGroupID));
+		}
 
 		$this->response->Categories = array_values($mc);
 
