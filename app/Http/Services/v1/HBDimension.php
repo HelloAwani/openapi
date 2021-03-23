@@ -2,6 +2,9 @@
 
 namespace Service\Http\Services\v1;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
 class HBDimension
 {
    /**

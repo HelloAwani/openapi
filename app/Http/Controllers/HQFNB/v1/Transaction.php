@@ -3,7 +3,8 @@
 namespace Service\Http\Controllers\HQFNB\v1;
 
 use Illuminate\Http\Request;
-use Service\Http\Services\v1\FNBDimension;
+use Service\Http\Services\v1\FNBSalesDimension;
+use Service\Http\Services\v1\FNBIngredientDimension;
 
 class Transaction extends \Service\Http\Controllers\_Heart
 {
@@ -37,7 +38,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 		$this->render();
 
-		$fnbDimension = new FNBDimension();
+		$fnbDimension = new FNBSalesDimension();
 		$tokenData = $this->_token_detail;
 		$request = $this->request;
 
@@ -75,7 +76,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 		$this->render();
 
-		$fnbDimension = new FNBDimension();
+		$fnbDimension = new FNBIngredientDimension();
 		$tokenData = $this->_token_detail;
 		$request = $this->request;
 
@@ -87,7 +88,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 			'end' => $request['DateEnd']
 		];
 		// get dimension
-		$result = $fnbDimension->getSalesDimension($tokenData, $dateRange);
+		$result = $fnbDimension->getIngredientDimension($tokenData, $dateRange);
 
 		if(!empty($result)){
 			$responseData = $result;
@@ -95,7 +96,9 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		else $responseData = [];
 		$this->response->Data = $responseData;
 
-		$this->reset_db();
-		$this->render(true);
+		return response()->json($responseData);
+
+		// $this->reset_db();
+		// $this->render(true);
 	}
 }
