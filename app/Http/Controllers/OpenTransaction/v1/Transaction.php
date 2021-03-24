@@ -227,9 +227,10 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					->send();
 				
 			}
+			print_r($res);
 			$this->response->push_response[] = $res;
 		}
-		
+		die();
 		$this->response->ExtTransactionID = $ext_trans_id;
 
 		$this->reset_db();
