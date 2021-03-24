@@ -21,7 +21,7 @@ class FNBIngredientDimension extends FNBDimension
     * @param array $date
     * @return object
     */
-   public function getIngredientDimension($tokenData, $date){
+   public function getDimension($tokenData, $date){
       $fnbSvc = new FNBService();
       $brandId = $tokenData->MainID;
 
@@ -84,7 +84,7 @@ class FNBIngredientDimension extends FNBDimension
             }
 
             if($trxTypeFound == false){
-               // copy trxType
+               // add trxType
                $dimData->IngredientTransaction->$trxType = $trxValue;
                break;
             }
@@ -110,8 +110,8 @@ class FNBIngredientDimension extends FNBDimension
                      // parse price qty record
                      foreach ($trxData->PriceQtyRecord as $tempPrice => $tempQty) {
                         $priceFound = false;
-                        foreach ($newData->PriceQtyRecord as $tempPriceCurr => $tempQtyCurr) {
-                           if($tempPrice == $tempPriceCurr){
+                        foreach ($newData->PriceQtyRecord as $tempPriceCurrIndex => $tempQtyCurr) {
+                           if($tempQty->Price == $tempQtyCurr->Price){
                               $priceFound = true;
                               break;
                            }
@@ -119,11 +119,15 @@ class FNBIngredientDimension extends FNBDimension
 
                         if($priceFound){
                            // update PriceQtyRecord
-                           $newData->PriceQtyRecord->$tempPrice += $tempQty;
+                           $newData->PriceQtyRecord[$tempPriceCurrIndex]->Qty += $tempQty->Qty;
                         }
                         else{
                            // add new PriceQtyRecord
-                           $newData->PriceQtyRecord->$tempPrice = $tempQty;
+                           $newData->PriceQtyRecord[] = [
+                              'Qty' => $tempQtyCurr->Qty,  
+                              'Price' => $tempQtyCurr->Price
+                           ];
+                           // $tempPrice = $tempQty;
                         }
                      }
 

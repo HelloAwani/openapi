@@ -76,7 +76,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 		$this->render();
 
-		$fnbDimension = new FNBIngredientDimension();
+		$ingredientDimension = new FNBIngredientDimension();
 		$tokenData = $this->_token_detail;
 		$request = $this->request;
 
@@ -88,7 +88,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 			'end' => $request['DateEnd']
 		];
 		// get dimension
-		$result = $fnbDimension->getIngredientDimension($tokenData, $dateRange);
+		$result = $ingredientDimension->getDimension($tokenData, $dateRange);
 
 		if(!empty($result)){
 			$responseData = $result;
