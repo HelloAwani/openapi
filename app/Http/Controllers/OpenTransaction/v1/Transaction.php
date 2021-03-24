@@ -216,9 +216,13 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					->to($recipients) // $recipients must an array
 					->priority('high')
 					->timeToLive(0)
+					// ->data([
+					// 	'title' => 'ExtTransactionID',
+					// 	'body' => $ext_trans_id,
+					// ])
 					->data([
-						'title' => 'ExtTransactionID',
-						'body' => $ext_trans_id,
+						'title' => 'Grabfood New Order',
+						'body' => 'You\'ve got a new order from Grab food at'.$now,
 					])
 					->notification([
 						'title' => 'Grabfood New Order',
