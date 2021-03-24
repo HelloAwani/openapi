@@ -222,7 +222,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					// ])
 					->data([
 						'title' => 'Grabfood New Order',
-						'body' => 'You\'ve got a new order from Grab food at '.$now,
+						'body' => "You've got a new order from Grab food at ".$now,
 					])
 					// ->notification([
 					// 	'title' => 'Grabfood New Order',
