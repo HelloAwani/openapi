@@ -105,7 +105,7 @@ class FNBIngredientDimension extends FNBDimension
 
                      $newData->Qty += $trxData->Qty;
                      $newData->PriceTotal += $trxData->PriceTotal;
-                     $newData->AvgPrice = $newData->PriceTotal / $newData->Qty;
+                     $newData->AvgPrice = abs( $newData->PriceTotal / $newData->Qty );
 
                      // parse price qty record
                      foreach ($trxData->PriceQtyRecord as $tempPrice => $tempQty) {
@@ -123,11 +123,7 @@ class FNBIngredientDimension extends FNBDimension
                         }
                         else{
                            // add new PriceQtyRecord
-                           $newData->PriceQtyRecord[] = [
-                              'Qty' => $tempQtyCurr->Qty,  
-                              'Price' => $tempQtyCurr->Price
-                           ];
-                           // $tempPrice = $tempQty;
+                           $newData->PriceQtyRecord[] = $tempQty;
                         }
                      }
 
@@ -141,7 +137,7 @@ class FNBIngredientDimension extends FNBDimension
             }
          }
       }
-      $dimData->AvgPrice = $dimData->PriceTotal / $dimData->QtyTotal;
+      $dimData->AvgPrice = abs($dimData->PriceTotal / $dimData->QtyTotal);
       $result->data = $dimData;
 
       return $result;
