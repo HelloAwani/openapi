@@ -37,7 +37,8 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		//standar validator
 		$this->validator($rules);
 		$ext_trans_id = 0;
-
+		$now = $this->now()->full_time;
+		
 		$dbtoken = [];
 		switch ($this->MappingMeta->SubProduct) {
 			case 'RES':{
@@ -218,7 +219,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					])
 					->notification([
 						'title' => 'Grabfood New Order',
-						'body' => 'You\'ve got a new order from Grab food.',
+						'body' => 'You\'ve got a new order from Grab food at'.$now,
 					])
 					->send();
 				
