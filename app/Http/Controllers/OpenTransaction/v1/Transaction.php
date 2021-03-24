@@ -224,10 +224,10 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						'title' => 'Grabfood New Order',
 						'body' => 'You\'ve got a new order from Grab food at '.$now,
 					])
-					->notification([
-						'title' => 'Grabfood New Order',
-						'body' => 'You\'ve got a new order from Grab food at '.$now,
-					])
+					// ->notification([
+					// 	'title' => 'Grabfood New Order',
+					// 	'body' => 'You\'ve got a new order from Grab food at ud'.$now,
+					// ])
 					->send();
 				
 			}
