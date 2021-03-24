@@ -223,6 +223,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					->data([
 						'title' => 'Grabfood New Order',
 						'body' => "You've got a new order from Grab food at ".$now,
+						'ExtTransactionID' => $ext_trans_id
 					])
 					// ->notification([
 					// 	'title' => 'Grabfood New Order',
