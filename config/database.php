@@ -46,6 +46,19 @@ return [
 
     'connections' => [
 
+        'main' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST'),
+            'port' => env('DB_PORT'),
+            'database' => env('DB_DATABASE'),
+            'username' => env('DB_USERNAME'),
+            'password' => env('DB_PASSWORD'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
         'oap' => [
             'driver' => 'pgsql',
             'host' => env('OAP_DB_HOST'),
