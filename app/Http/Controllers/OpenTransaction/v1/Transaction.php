@@ -21,6 +21,9 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		}
 		$this->api_version =  "v1";
 		$this->enforce_product  = "OpenTransaction";
+		ini_set('display_errors', '1');
+		ini_set('display_startup_errors', '1');
+		error_reporting(E_ALL);
 	}
 
 	public function submit(){
