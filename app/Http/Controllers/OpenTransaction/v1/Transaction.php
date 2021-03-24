@@ -207,6 +207,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 				$recipients = array(
 					$t->DeviceToken
 				);
+				
 				$res = fcm()
 					->to($recipients) // $recipients must an array
 					->priority('high')
@@ -216,13 +217,14 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						'body' => $ext_trans_id,
 					])
 					->notification([
-						'title' => 'New Order',
-						'body' => 'Grabfood new order',
+						'title' => 'Grabfood New Order',
+						'body' => 'You\'ve got a new order from Grab food.',
 					])
 					->send();
+				
 			}
 		}
-
+		
 		$this->response->ExtTransactionID = $ext_trans_id;
 
 		$this->reset_db();
@@ -233,7 +235,8 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		
 		
 		$recipients = [
-			'fK7yKynXRt6h2CVoKdBLlX:APA91bH9MCtpRHUfCVRwFHtrz8UMV-NOVWUvSzQIeDl-QfPg5PsaBV1CUHccIBQq7Q-r8J2HWwRHwe-F4oAXkZLO5WjLfTI6tncXjVHrfeg7OZhy0Sj6mSqIy1-ZjXXMaU5k3r_zKcA_'
+			'fK7yKynXRt6h2CVoKdBLlX:APA91bH9MCtpRHUfCVRwFHtrz8UMV-NOVWUvSzQIeDl-QfPg5PsaBV1CUHccIBQq7Q-r8J2HWwRHwe-F4oAXkZLO5WjLfTI6tncXjVHrfeg7OZhy0Sj6mSqIy1-ZjXXMaU5k3r_zKcA_',
+			'fsNWrzkqSWeE_HKtt0P3qN:APA91bFyIDLr1o3DKrBXYboH2kPGoPspGpiWt2R5G35LgrLA8D5DjC9UR6YZGaLRxxvusOpYrZivSEMsy4Zq88iYKUBWleMm8aDXxBhUukfiM9yDyxj4YdrrllpBVW5xB2c0FYLRxsPh'
 		];
 		$data = $this->request['Data'];
 		$notif = $this->request['Notification'];
