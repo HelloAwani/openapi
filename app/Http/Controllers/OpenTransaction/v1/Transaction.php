@@ -145,7 +145,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						}
 					}
 
-					$this->end();	
+					$this->end();
 					$this->db = "RES";
 					$dbtoken = $this->query('SELECT "DeviceToken","Plattform"  FROM "Token" where "BranchID" = :BranchID and "RestaurantID" = :MainID and "DeviceToken" is not null and "Disabled" Is Null ',
 						[
@@ -153,16 +153,13 @@ class Transaction extends \Service\Http\Controllers\_Heart
 							"MainID"=> $this->_token_detail->MainID
 						]
 					);
-
 				break;
 			}
 			default:
 				# code...
 				break;
 		}
-
 		$this->db  = $this->_token_detail->ProductID;
-
 
 		$this->response->push_response = [];
 		foreach($dbtoken as $t){
@@ -206,13 +203,25 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		
 			}
 
-
+			if($t->Plattform =='Android'){
+				$recipients = array(
+					$t->DeviceToken
+				);
+				$res = fcm()
+					->to($recipients) // $recipients must an array
+					->priority('high')
+					->timeToLive(0)
+					->data([
+						'title' => 'ExtTransactionID',
+						'body' => $ext_trans_id,
+					])
+					->notification([
+						'title' => 'New Order',
+						'body' => 'Grabfood new order',
+					])
+					->send();
+			}
 		}
-
-		
-
-	
-
 
 		$this->response->ExtTransactionID = $ext_trans_id;
 

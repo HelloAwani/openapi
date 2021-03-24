@@ -85,7 +85,7 @@ class Token extends \Service\Http\Controllers\_Heart
 			"ExpiryDate"=>$this->add_interval($this->now()->full_time,'48 hours'),
 			"Token"=>$this->generate_token(),
 			"CreatedUserAgent"=> $_SERVER["REMOTE_ADDR"],
-			"CreateIPAddress"=> $_SERVER["HTTP_USER_AGENT"],
+			"CreateIPAddress"=> @$_SERVER["HTTP_USER_AGENT"],
 
 		];
 
