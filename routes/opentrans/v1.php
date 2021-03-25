@@ -29,6 +29,7 @@ Route::group(['prefix' => $version.'/transaction'], function () {
     Route::get('test/{token}', 'Transaction@test');
     Route::post('fetch', 'Transaction@fetch');
     Route::post('fetch_internal', 'Transaction@fetch_internal');
+    Route::post('integrated_order_grab', 'Transaction@integrated_order_grab');
     Route::post('close_transaction', 'Transaction@close_transaction');
     Route::post('test_android', 'Transaction@test_android');
 });

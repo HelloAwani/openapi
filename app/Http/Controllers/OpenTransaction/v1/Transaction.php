@@ -456,7 +456,9 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					$newTrx[$a->ExtTransactionID] = $a;
 				}
 				foreach($orderGrab as &$a){
+					$additional = json_decode($a->AdditionalValues);
 					$newTrx[$a->OurValue]->orderID = $a->TheirValue;
+					$newTrx[$a->OurValue]->shortOrderNumber = @$additional->shortOrderNumber;
 				}
 
 				if($rid!=-1){
@@ -525,6 +527,36 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 		$this->reset_db();
 		$this->render(true);
+	}
+
+	public function integrated_order_grab(){
+		$rules = [
+			'ExtTransactionID' => 'required',
+			'OrderID' => 'required',
+		];
+		// $this->db  = $this->request["ProductID"];
+		$this->db  = $this->request['ProductID'];
+		//standar validator
+		$this->validator($rules);
+		$this->query('UPDATE "ExtTransaction" set "FinishedDate" = :date,"OrderID" = :OrderID,  "TransactionStatus" = :Status where "ExtTransactionID" = :id 
+					and "BranchID" = :BranchID and "MainID" = :MainID and "ProductID" = :ProductID', 
+					[
+						"date"=>$this->coalesce(@$this->request["FinishedDate"], $this->now()->full_time),
+						"id"=>$this->request["ExtTransactionID"],
+						"BranchID" => @$this->request["BranchID"],
+						"MainID" => @$this->request["MainID"],
+						"OrderID" => @$this->request["OrderID"],
+						"Status" => @$this->request["Status"],
+						"ProductID" => @$this->request["SubProduct"],
+					]
+				);
+		$this->response->ExtTransaction = @$this->query(
+					'SELECT * from "ExtTransaction" where "ExtTransactionID" = :id '
+					, 
+					["id"=>$this->request["ExtTransactionID"]
+				]);
+			$this->reset_db();
+			$this->render(true);
 	}
 
 
