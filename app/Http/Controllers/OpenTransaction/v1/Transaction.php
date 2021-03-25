@@ -435,7 +435,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					);
 				}
 
-
+				
 				$trx_dtl = $this->query('SELECT * from "ExtTransactionDetail" where "ExtTransactionID" in ('.implode(',', $trx_id).') ');
 				$trx_dtl_id = $this->extract_column($trx_dtl, "ExtTransactionDetailID", [0]);
 
@@ -448,12 +448,23 @@ class Transaction extends \Service\Http\Controllers\_Heart
 				}
 				$this->map_record($trx,"Items", "ExtTransactionID", $trx_dtl);
 
+				$this->db = 'integration';
+				$orderGrab = $this->query('select * from "IntegratedData" where "Object" like \'Input Order GrabFood\' and
+				"OurValue" in (\''.implode('\',\'',$trx_id).'\')');
+				$newTrx = [];
+				foreach($trx as $a){
+					$newTrx[$a->ExtTransactionID] = $a;
+				}
+				foreach($orderGrab as &$a){
+					$newTrx[$a->OurValue]->orderID = $a->TheirValue;
+				}
+
 				if($rid!=-1){
 					$this->response->Transaction = @$trx[0];
 				}else{
 					$this->response->Transactions = @$trx;
 				}
-
+				
 
 				break;
 			}

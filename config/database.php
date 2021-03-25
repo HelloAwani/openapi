@@ -59,6 +59,19 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'integration' => [
+            'driver' => 'pgsql',
+            'host' => env('INTEGRATION_DB_HOST'),
+            'port' => env('INTEGRATION_DB_PORT'),
+            'database' => env('INTEGRATION_DB_DATABASE'),
+            'username' => env('INTEGRATION_DB_USERNAME'),
+            'password' => env('INTEGRATION_DB_PASSWORD'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
         'oap' => [
             'driver' => 'pgsql',
             'host' => env('OAP_DB_HOST'),
