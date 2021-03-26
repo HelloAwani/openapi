@@ -70,6 +70,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						"Phone" => @$this->request["Phone"],
 						"Email" => @$this->request["Email"],
 						"GrandTotal" => @$this->request["GrandTotal"],
+						"VAT" => @$this->request["VAT"],
 						"HandlerID" => @$this->request["HandlerID"],
 						"CreatedDate" => @$this->now()->full_time,
 						"ProductID" => @$this->MappingMeta->SubProduct,
