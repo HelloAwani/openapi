@@ -499,7 +499,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 			["id"=>$this->request["ExtTransactionID"]
 		]);
 		$this->validator($rules);
-		$this->query('UPDATE "ExtTransaction" set "FinishedDate" = :date,  "TransactionStatus" = :Status where "ExtTransactionID" = :id 
+		$this->query('UPDATE "ExtTransaction" set "FinishedDate" = :date,  "TransactionStatus" = :Status, "SyncDate" = null where "ExtTransactionID" = :id 
 					and "BranchID" = :BranchID and "MainID" = :MainID and "ProductID" = :ProductID', 
 					[
 						"date"=>$this->coalesce(@$this->request["FinishedDate"], $this->now()->full_time),
