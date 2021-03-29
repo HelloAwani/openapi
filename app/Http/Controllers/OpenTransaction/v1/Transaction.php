@@ -385,14 +385,16 @@ class Transaction extends \Service\Http\Controllers\_Heart
 				break;
 			
 			case 'Synced':
-				$where.=' and "SyncDate" is not null and ('.$rid.' = -1 or "ExtTransactionID" = '.$rid.'  )' ;
+				$where.='and "TransactionStatus" is null and "SyncDate" is not null and ('.$rid.' = -1 or "ExtTransactionID" = '.$rid.'  )' ;
 
 				break;
 			case 'Unsynced':
-				$where.=' and "SyncDate" is null and ('.$rid.' = -1 or "ExtTransactionID" = '.$rid.'  )' ;
+				$where.='and "TransactionStatus" is null and "SyncDate" is null and ('.$rid.' = -1 or "ExtTransactionID" = '.$rid.'  )' ;
 
 				break;
-			
+			case 'Cancelled':
+				$where.=' and "TransactionStatus" = \'Cancelled\' and ('.$rid.' = -1 or "ExtTransactionID" = '.$rid.'  )' ;
+				break;
 			default:
 				$where.=' and "FinishedDate" is null and ('.$rid.' = -1 or "ExtTransactionID" = '.$rid.'  )' ;
 				break;
@@ -483,6 +485,115 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		$this->render(true);
 	}
 
+
+	public function cancel(){
+		$rules = [
+			'ExtTransactionID' => 'required',
+			'orderID' => 'required',
+		];
+		// $this->db  = $this->request["ProductID"];
+		$this->db  = $this->request['ProductID'];
+		$this->response->ExtTransaction = @$this->query(
+			'SELECT * from "ExtTransaction" where "ExtTransactionID" = :id '
+			, 
+			["id"=>$this->request["ExtTransactionID"]
+		]);
+		$this->validator($rules);
+		$this->query('UPDATE "ExtTransaction" set "FinishedDate" = :date,  "TransactionStatus" = :Status where "ExtTransactionID" = :id 
+					and "BranchID" = :BranchID and "MainID" = :MainID and "ProductID" = :ProductID', 
+					[
+						"date"=>$this->coalesce(@$this->request["FinishedDate"], $this->now()->full_time),
+						"id"=>$this->request["ExtTransactionID"],
+						"BranchID" => @$this->request["BranchID"],
+						"MainID" => @$this->request["MainID"],
+						"Status" => @$this->request["Status"],
+						"ProductID" => @$this->request["SubProduct"],
+					]
+				);
+				
+		$this->end();
+				$this->response->push_response = [];
+				$this->db = "RES";
+				$dbtoken = $this->query('SELECT "DeviceToken","Plattform"  FROM "Token" where "BranchID" = :BranchID and "RestaurantID" = :MainID and "DeviceToken" is not null and "Disabled" Is Null ',
+						[
+							"BranchID"=> $this->request['BranchID'],
+							"MainID"=> $this->request['MainID']
+						]
+					);
+				foreach($dbtoken as $t){
+					
+					if($t->Plattform=="iOS"){
+						$options = [
+							'key_id' => env('APN_KEY'), // The Key ID obtained from Apple developer account
+							'team_id' => env('APN_TEAM'), // The Team ID obtained from Apple developer account
+							'app_bundle_id' => env('APN_BUNDLE'), // The bundle ID for app obtained from Apple developer account
+							'private_key_path' => storage_path(env('APN_P8')), // Path to private key
+							'private_key_secret' => null // Private key secret
+						];
+						
+				
+						$authProvider = AuthProvider\Token::create($options);
+				
+						$alert = Alert::create()->setTitle("New Order");
+						$alert = $alert->setBody("Grabfood new order");
+				
+						$payload = Payload::create()->setAlert($alert);
+				
+						//set notification sound to default
+						$payload->setSound('default');
+				
+						//add custom value to your notification, needs to be customized
+						$payload->setCustomValue('ExtTransactionID', $ext_trans_id);
+				
+						$deviceTokens = [$t->DeviceToken];
+						$notifications = [];
+						foreach ($deviceTokens as $deviceToken) {
+							$notifications[] = new Notification($payload,$deviceToken);
+						}
+				
+						$client = new Client($authProvider, $production = false);
+						$client->addNotifications($notifications);
+				
+						$pResponses = $client->push(); 
+						foreach($pResponses as $pr){
+							$this->response->push_responsep[] = $pr;
+						}
+				
+					}
+		
+					if($t->Plattform =='Android'){
+						$recipients = array(
+							$t->DeviceToken
+						);
+						$now = $this->now()->full_time;
+						$res = fcm()
+							->to($recipients) // $recipients must an array
+							->priority('high')
+							->timeToLive(0)
+							// ->data([
+							// 	'title' => 'ExtTransactionID',
+							// 	'body' => $ext_trans_id,
+							// ])
+							->data([
+								'title' => 'Grabfood Cancelled Order',
+								'body' => "There's a cancelled order at  ".$now,
+								'ExtTransactionID' => $this->request["ExtTransactionID"],
+							])
+							// ->notification([
+							// 	'title' => 'Grabfood New Order',
+							// 	'body' => 'You\'ve got a new order from Grab food at ud'.$now,
+							// ])
+							->send();
+						
+					}
+					
+					$this->response->push_response[] = $res;
+				}
+				
+				$this->response->ExtTransactionID = $this->request["ExtTransactionID"];
+		$this->reset_db();
+		$this->render(true);
+	}
 
 	
 
