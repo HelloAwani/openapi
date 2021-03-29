@@ -389,7 +389,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 				break;
 			case 'Unsynced':
-				$where.='and ("TransactionStatus" = \'Cancelled\' or  ("SyncDate" is null and "TransactionStatus" is null)) and ('.$rid.' = -1 or "ExtTransactionID" = '.$rid.'  )' ;
+				$where.='and (("TransactionStatus" = \'Cancelled\' and "SyncDate" is null) or  ("SyncDate" is null and "TransactionStatus" is null)) and ('.$rid.' = -1 or "ExtTransactionID" = '.$rid.'  )' ;
 
 				break;
 			case 'Cancelled':
