@@ -75,7 +75,8 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						"CreatedDate" => @$this->now()->full_time,
 						"ProductID" => @$this->MappingMeta->SubProduct,
 						"BranchID" => @$this->_token_detail->BranchID,
-						"MainID" => @$this->_token_detail->MainID
+						"MainID" => @$this->_token_detail->MainID,
+						"GrandTotalAfterTax" => @$this->request["GrandTotal"] + @$this->Request["VAT"]
 					];
 
 					$this->db  = $this->MappingMeta->SubProduct;
@@ -114,6 +115,19 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					$this->db  = $this->_token_detail->ProductID;
 
 					$this->start();
+					if($this->_token_detail->KeyName == 'Grab Open Transaction'){
+						$trans['GrandTotal'] -= $trans['VAT'];
+						if($trans['VAT'] > 0 || $trans['VAT'] != null)
+							$percentageTax = $trans['VAT'] / $trans['GrandTotal'] * 100;
+						else
+							$percentageTax = 0;
+						
+						
+						$percentageValue = 100+$percentageTax;
+						$trans['GrandTotalAfterTax'] = $this->request['GrandTotal'];
+					}
+					
+
 					$ext_trans_id = $this->upsert("ExtTransaction", $trans);
 					foreach ($this->request["Items"] as $item) {
 						$dtl = [
@@ -121,8 +135,17 @@ class Transaction extends \Service\Http\Controllers\_Heart
 							"ItemID" => @$item["ItemID"],
 							"ItemName" => @$item["ItemName"],
 							"Price" => @$item["Price"],
-							"Qty" => @$item["Qty"]
+							"Qty" => @$item["Qty"],
+							"VAT" => @$item["VAT"]
 						];
+						if($this->_token_detail->KeyName == 'Grab Open Transaction'){
+							if($percentageTax > 0){
+								$dtl['VAT'] = $dtl['Price'] - ((100/$percentageValue)*$dtl['Price']);
+								$dtl['Price'] = $dtl['Price'] - $dtl['VAT'];
+							}	
+						}
+						
+						
 						if(!in_array(@$item["ItemID"], $menu_id)){
 							$this->add_error("Item", "Item", "Item ID {$item["ItemID"]} is Invalid");	
 						}
@@ -138,8 +161,15 @@ class Transaction extends \Service\Http\Controllers\_Heart
 									"ModifierID" => @$mod["ModifierID"],
 									"ModifierName" => @$mod["ModifierName"],
 									"Price" => @$mod["Price"],
+									"VAT" => 0
 								];
-
+								if($this->_token_detail->KeyName == 'Grab Open Transaction'){
+									if($percentageTax > 0){
+										$mdtl['VAT'] = $mdtl['Price'] - ((100/$percentageValue)*$mdtl['Price']);
+										$mdtl['Price'] = $mdtl['Price'] - $mdtl['VAT'];
+									}
+								}
+								
 								if(!in_array(@$mod["ModifierID"], $mod_id)){
 									$this->add_error("Modifier", "Modifier", "Modifier ID {$mod["ModifierID"]} is Invalid");	
 								}
@@ -212,7 +242,19 @@ class Transaction extends \Service\Http\Controllers\_Heart
 				$recipients = array(
 					$t->DeviceToken
 				);
-				
+				if($this->_token_detail->KeyName == 'Grab Open Transaction'){
+					$data = [
+						'title' => 'Grabfood New Order',
+						'body' => "You've got a new order from Grab food at ".$now,
+						'ExtTransactionID' => $ext_trans_id
+					];
+				}else{
+					$data = [
+						'title' => 'New Order from Web Ordering',
+						'body' => "You've got a new order from Web Ordering at ".$now,
+						'ExtTransactionID' => $ext_trans_id
+					];
+				}
 				$res = fcm()
 					->to($recipients) // $recipients must an array
 					->priority('high')
@@ -221,11 +263,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 					// 	'title' => 'ExtTransactionID',
 					// 	'body' => $ext_trans_id,
 					// ])
-					->data([
-						'title' => 'Grabfood New Order',
-						'body' => "You've got a new order from Grab food at ".$now,
-						'ExtTransactionID' => $ext_trans_id
-					])
+					->data($data)
 					// ->notification([
 					// 	'title' => 'Grabfood New Order',
 					// 	'body' => 'You\'ve got a new order from Grab food at ud'.$now,

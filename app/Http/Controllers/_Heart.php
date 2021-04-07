@@ -775,7 +775,9 @@ class _Heart
         }
         $this->render();
 
-        $etoken = @$this->query('SELECT * FROM "Token" where "Token" = :token and "DisabledDate" is null 
+        $etoken = @$this->query('SELECT "Token".*,api."KeyName" FROM "Token"
+        left join "APICredential" api on "Token"."APICredentialID" = api."APICredentialID"
+        where "Token" = :token and "Token"."DisabledDate" is null 
             and :date <= "ExpiryDate"
         ',
             array(
