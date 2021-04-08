@@ -125,6 +125,13 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						
 						$percentageValue = 100+$percentageTax;
 						$trans['GrandTotalAfterTax'] = $this->request['GrandTotal'];
+						$modTotal = 0;
+						foreach($this->request["Items"] as $item){
+							foreach($item["Modifiers"] as $mod){
+								$modTotal += $mod["Price"];
+							}
+							$item["Price"] -= $modTotal;
+						}
 					}
 					
 
