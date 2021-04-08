@@ -54,4 +54,25 @@ class FNBService
 
       return $result ?? [];
    }
+
+   /**
+    * map branch data to [BranchID:{BranchData}]
+    *
+    * @param array $data branch data from query result
+    * @return array
+    */
+   public function mapData($data){
+      if(empty($data)) return [];
+
+      $result = [];
+      foreach ($data as $value) {
+         $temp = (object)[];
+         $temp->BranchName = $value->BranchName;
+         $temp->Address = $value->Address;
+
+         $result[$value->BranchID] = $temp;
+      }
+      
+      return $result;
+   }
 }

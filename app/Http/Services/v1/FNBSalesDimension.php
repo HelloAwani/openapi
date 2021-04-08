@@ -27,6 +27,7 @@ class FNBSalesDimension extends FNBDimension
 
       // get brand branch
       $branch = $fnbSvc->getBranch($brandId);
+      $branch = $fnbSvc->mapData($branch);
       // $branchId = $fnbSvc->getBranchId($branch);
 
       if (empty($branch)) {
@@ -42,7 +43,7 @@ class FNBSalesDimension extends FNBDimension
       $brandDim = $this->prepareDimData($brandDim);
 
       // parse dimension data
-      $result = $this->parseSalesDimensionData($brandDim);
+      $result = $this->parseSalesDimensionData($brandDim, $branch);
 
       return $result;
    }
@@ -82,7 +83,7 @@ class FNBSalesDimension extends FNBDimension
     * @param array $data
     * @return array
     */
-   public function parseSalesDimensionData($data)
+   public function parseSalesDimensionData($data, $branchData = [])
    {
       $temp = $data[0];
       $result = (object) [];
@@ -109,14 +110,14 @@ class FNBSalesDimension extends FNBDimension
             $temp = $currData->data;
             $tempResult = (object)[];
             $tempResult->BranchID = (int) ($currData->branch_id ?? null);
+            $tempResult->BranchName = $branchData[$tempResult->BranchID]->BranchName ?? '';
+            $tempResult->BranchAddress =  $branchData[$tempResult->BranchID]->Address ?? '';
             $tempResult->VAT = (float) ($temp->VAT ?? 0);
             $tempResult->Bill = (float) ($temp->Bill ?? 0);
             $tempResult->Changes = (float) ($temp->Changes ?? 0);
             $tempResult->Discount = (float) ($temp->Discount ?? 0);
             $tempResult->GuestNumber = (float) ($temp->GuestNumber ?? 0);
             $tempResult->Rounding = (float) ($temp->Rounding ?? 0);
-            $tempResult->ItemSalesDetail = $temp->ItemSalesDetail ?? [];
-            $tempResult->PaymentDetail = $temp->PaymentDetail ?? [];
             $tempResult->ServiceTax = (float) ($temp->ServiceTax ?? 0);
             $tempResult->TotalBill = (float) ($temp->TotalBill ?? 0);
             $tempResult->TotalItem = (float) ($temp->TotalItem ?? 0);
@@ -126,6 +127,8 @@ class FNBSalesDimension extends FNBDimension
             $tempResult->TotalItemSales = (float) ($temp->TotalItemSales ?? 0);
             $tempResult->TotalDiscountItem = (float) ($temp->TotalDiscountItem ?? 0);
             $tempResult->TotalModifierSales = (float) ($temp->TotalModifierSales ?? 0);
+            $tempResult->ItemSalesDetail = $temp->ItemSalesDetail ?? [];
+            $tempResult->PaymentDetail = $temp->PaymentDetail ?? [];
 
             $result->Data[] = $tempResult;
          } else {
