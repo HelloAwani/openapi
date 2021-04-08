@@ -70,5 +70,18 @@ class FNBDimension
       } else return false;
    }
 
-   
+   /**
+    * decode json string in dimension data
+    *
+    * @param object $data
+    * @return object
+    */
+   protected function prepareDimData($data)
+   {
+      foreach ($data as $key => $value) {
+         $data[$key]->data = json_decode($data[$key]->data);
+      }
+
+      return $data;
+   }
 }

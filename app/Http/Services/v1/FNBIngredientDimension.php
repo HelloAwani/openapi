@@ -2,9 +2,6 @@
 
 namespace Service\Http\Services\v1;
 
-use Carbon\Carbon;
-use DB;
-use Log;
 use Service\Http\Services\v1\FNBService;
 
 class FNBIngredientDimension extends FNBDimension
@@ -22,29 +19,15 @@ class FNBIngredientDimension extends FNBDimension
     * @return object
     */
    public function getDimension($tokenData, $date){
-      $fnbSvc = new FNBService();
       $brandId = $tokenData->MainID;
 
       $brandDim = $this->getBrandDimension($brandId, ['fnb_ingredient_transaction'], $date);
+      if(empty($brandDim)) return false;
       $brandDim = $this->prepareDimData($brandDim);
 
       $result = $this->parseDimData($brandDim);
       
       return $result;
-   }
-
-   /**
-    * decode json string in dimension data
-    *
-    * @param object $data
-    * @return object
-    */
-   private function prepareDimData($data){
-      foreach ($data as $key => $value) {
-         $data[$key]->data = json_decode($data[$key]->data);
-      }
-
-      return $data;
    }
 
    /**
