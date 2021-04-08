@@ -4,57 +4,13 @@ namespace Service\Http\Services\v1;
 
 use Carbon\Carbon;
 use DB;
-use Log;
 use Service\Http\Services\v1\FNBService;
 
-class FNBSalesDimension extends HBDimension
+class FNBSalesDimension extends FNBDimension
 {
    public function __construct()
    {
-      $this->dimensionStructure = [
-         // "BranchID" => 1,
-         // "BranchName" => 1,
-         // "Alamat" => 1,
-         // "Data" => [
-         "VAT" => 2,
-         "Bill" => 2,
-         "Changes" => 2,
-         "Discount" => 2,
-         "Rounding" => 2,
-         "TotalBill" => 2,
-         "TotalItem" => 2,
-         "ServiceTax" => 2,
-         "GuestNumber" => 2,
-         "TotalBilling" => 2,
-         "TotalPayment" => 2,
-         "PaymentDetail" => [
-            "PaymentMethodID" => 3,
-            "Payment" => 2,
-            "PaymentCount" => 2,
-            "StartToFinish" => 2
-         ],
-         "TotalModifier" => 2,
-         "TotalItemSales" => 2,
-         "ItemSalesDetail" => [
-            "MenuID" => 3,
-            "Qty" => 2,
-            "AvgPrice" => 'countAvgPrice',
-            "Discount" => 2,
-            "SubTotal" => 2,
-            "CategoryID" => 1,
-            "StartToFinish" => 2,
-            "ModifierDetail" => [
-               "ModifierID" => 1,
-               "ModifierTotal" => 2
-            ]
-         ],
-         "TotalDiscountItem" => 2,
-         "TOtalModifierSales" => 2
-         // ]
-      ];
-
       parent::__construct();
-
    }
 
    /**
@@ -64,7 +20,7 @@ class FNBSalesDimension extends HBDimension
     * @param array $date ['start', 'end']
     * @return array
     */
-   public function getSalesDimension($tokenData, $date)
+   public function getDimension($tokenData, $date)
    {
       $fnbSvc = new FNBService();
       $brandId = $tokenData->MainID;
@@ -78,24 +34,17 @@ class FNBSalesDimension extends HBDimension
       }
 
       // get all brand dimension within date range
-      $this->getBrandDimension($brandId, ['fnb_sales'], $date);
-      if (empty($this->rawDimension)) {
+      $brandDim = $this->getBrandDimension($brandId, ['fnb_sales'], $date);
+      if (empty($brandDim)) {
          return false;
       }
 
+      $brandDim = $this->prepareDimData($brandDim);
+
       // parse dimension data
-      $this->parseSalesDimensionData($branch);
+      $result = $this->parseSalesDimensionData($brandDim);
 
-      return $this->dimension;
-   }
-
-   public function getIngredientDimension($tokenData, $date){
-      $fnbSvc = new FNBService();
-      $brandId = $tokenData->MainID;
-
-      $this->getBrandDimension($brandId, ['fnb_ingredient_transaction'], $date);
-
-      return 's';
+      return $result;
    }
 
    /**
@@ -128,164 +77,217 @@ class FNBSalesDimension extends HBDimension
    }
 
    /**
-    * get BRAND dimension within date range
+    * parse sales dimension data
     *
-    * @param array $brandId main_id
-    * @param array $dimensionName array of dimension name
-    * @param array $dateRange[start, end]
-    * @return mixed
-    */
-   public function getBrandDimension($brandId, $dimensionName, $dateRange)
-   {
-      // get startOfDay of 'start' and endOfDay of 'end'
-      $dateRange['start'] = Carbon::parse($dateRange['start'])->startOfDay()->toDateTimeString();
-      $dateRange['end'] = Carbon::parse($dateRange['end'])->endOfDay()->toDateTimeString();
-
-      // run query
-      $result = DB::connection('rep')
-         ->table('dimension')
-         ->whereIn('dimension_name', $dimensionName)
-         ->where('main_id', '=', $brandId)
-         ->whereBetween('timeframe', [$dateRange['start'], $dateRange['end']])
-         ->get();
-
-      if ($result->isNotEmpty()) {
-         $this->rawDimension = $result;
-         return $result;
-      } else return false;
-   }
-
-   /**
-    * parse dimension data
-    *
-    * @param array $data array of dimension
-    * @param array $filter array of branch id to be shown from the dimension, if not given, process all dimension
+    * @param array $data
     * @return array
     */
-   public function parseSalesDimensionData($branch)
+   public function parseSalesDimensionData($data)
    {
-      foreach ($this->rawDimension as $currDimension) {
-         $currDimension->data = json_decode($currDimension->data);
-         
-         $isNew = true;
-         
-         // update dimension
-         // search if the branch already exist in dimension
-         foreach ($this->dimension as $index => $currValue) {
-            if ($currValue->BranchID == $currDimension->branch_id) {
-               // update dimension
-               $isNew = false;
-               
-               // prepare data to be merged
-               $oldData = (array) $this->dimension[$index]->Data;
-               $currDimData = (array) $currDimension->data;
-               
-               // $test = $this->mergeDimension2((array) $currValue->Data, $currDimData);
-               // $this->mergeDimension3((array) $currValue->Data, $currDimData);
-               
-               $newData = $this->mergeDimension($oldData, $currDimData, ['PaymentDetail', 'ItemSalesDetail']);
-               
-               $newData['PaymentDetail'] = $this->mergeDimensionWithId($oldData['PaymentDetail'], $currDimData['PaymentDetail'], 'PaymentMethodID');
-               $newData['ItemSalesDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail'], $currDimData['ItemSalesDetail'], 'MenuID', ['CategoryID', 'ModifierDetail', 'AvgPrice']);
+      $temp = $data[0];
+      $result = (object) [];
+      $result->MainID = $temp->main_id;
+      // $result->branch_id = $temp->branch_id;
+      $result->ProductID = $temp->product_id;
+      $result->DimensionName = $temp->dimension_name;
+      $result->DimensionVersion = (int) $temp->dimension_version;
+      $result->Data = [];
 
-               // $newData['ItemSalesDetail']['ModifierDetail'] = $this->mergeDimensionWithId($oldData['ItemSalesDetail']['ModifierDetail'], $currDimData['ItemSalesDetail']['ModifierDetail'], 'ModifierName');
-               $this->dimension[$index]->Data = $newData;
-
-               continue;
-            }
-         }
-
-         // insert new one if not found
-         if ($isNew) {
-            // search branch data
-            $branchData = [];
-            foreach ($branch as $tempBranch) {
-               if ($tempBranch->BranchID == $currDimension->branch_id) {
-                  $branchData = $tempBranch;
-                  $result = [
-                     "BranchID" => $branchData->BranchID,
-                     "BranchName" => $branchData->BranchName,
-                     "Alamat" => $branchData->Address,
-                     "Data" => $currDimension->data
-                  ];
-                  $this->dimension[] = json_decode(json_encode(($result)));
-                  break;
-               }
-            }
-            if (empty($branchData)) {
-               $fnbSvc = new FNBService();
-               Log::debug($currDimension->branch_id . '|' . json_encode($fnbSvc->getBranchId($branch)));
-            }
-         }
-      }
-   }
-
-   /**
-    * merge dimension data that have id, example: ItemSalesDetail (for each MenuID)
-    *
-    * @param array $oldData
-    * @param array $newData array of data to be added
-    * @param string $identifier id identifier in data, ex: MenuID, PaymentMethodID
-    * @param array $filter array of index that will be ignored from $newData, ex: avgPrice
-    * @return array
-    */
-   protected function mergeDimensionWithId($oldData, $newData, $identifier, $filter = [])
-   {
-      $result = $oldData;
-      foreach ($newData as $new) {
-         $isNew = true;
-
-         // search for existing data
-         foreach ($oldData as $oldIndex => $old) {
-            if ($old->$identifier == $new->$identifier) {
-               $isNew = false;
-               $currData = $oldData[$oldIndex];
+      foreach ($data as $currData) {
+         // check branch already exist or not
+         $tempResultData = $result->Data;
+         $branchExist = false;
+         foreach ($tempResultData as $currDataIndex => $currDataValue) {
+            if ($currDataValue->BranchID == $currData->branch_id) {
+               $branchExist = true;
                break;
             }
          }
 
-         if ($isNew) {
-            // insert new data
-            $result[] = $new;
+         if (!$branchExist) {
+            // add new branch to dimension data
+            $temp = $currData->data;
+            $tempResult = (object)[];
+            $tempResult->BranchID = (int) ($currData->branch_id ?? null);
+            $tempResult->VAT = (float) ($temp->VAT ?? 0);
+            $tempResult->Bill = (float) ($temp->Bill ?? 0);
+            $tempResult->Changes = (float) ($temp->Changes ?? 0);
+            $tempResult->Discount = (float) ($temp->Discount ?? 0);
+            $tempResult->GuestNumber = (float) ($temp->GuestNumber ?? 0);
+            $tempResult->Rounding = (float) ($temp->Rounding ?? 0);
+            $tempResult->ItemSalesDetail = $temp->ItemSalesDetail ?? [];
+            $tempResult->PaymentDetail = $temp->PaymentDetail ?? [];
+            $tempResult->ServiceTax = (float) ($temp->ServiceTax ?? 0);
+            $tempResult->TotalBill = (float) ($temp->TotalBill ?? 0);
+            $tempResult->TotalItem = (float) ($temp->TotalItem ?? 0);
+            $tempResult->TotalBilling = (float) ($temp->TotalBilling ?? 0);
+            $tempResult->TotalPayment = (float) ($temp->TotalPayment ?? 0);
+            $tempResult->TotalModifier = (float) ($temp->TotalModifier ?? 0);
+            $tempResult->TotalItemSales = (float) ($temp->TotalItemSales ?? 0);
+            $tempResult->TotalDiscountItem = (float) ($temp->TotalDiscountItem ?? 0);
+            $tempResult->TotalModifierSales = (float) ($temp->TotalModifierSales ?? 0);
+
+            $result->Data[] = $tempResult;
          } else {
-            // update data
-            $result[$oldIndex] = $currData;
-            foreach ($new as $dataIndex => $dataValue) {
-               // process data if it's not identifier and not in filter
-               if ($dataIndex != $identifier && !in_array($dataIndex, $filter)) {
-                  $result[$oldIndex]->$dataIndex = strval($result[$oldIndex]->$dataIndex + $dataValue);
-               }
-            }
+            // update branch data
+            $temp = $currData->data;
+            $tempResult = $tempResultData[$currDataIndex];
+            $tempResult->VAT += (float) ($temp->VAT ?? 0);
+            $tempResult->Bill += (float) ($temp->Bill ?? 0);
+            $tempResult->Changes += (float) ($temp->Changes ?? 0);
+            $tempResult->Discount += (float) ($temp->Discount ?? 0);
+            $tempResult->GuestNumber += (float) ($temp->GuestNumber ?? 0);
+            $tempResult->Rounding += (float) ($temp->Rounding ?? 0);
+            $tempResult->ServiceTax += (float) ($temp->ServiceTax ?? 0);
+            $tempResult->TotalBill += (float) ($temp->TotalBill ?? 0);
+            $tempResult->TotalItem += (float) ($temp->TotalItem ?? 0);
+            $tempResult->TotalBilling += (float) ($temp->TotalBilling ?? 0);
+            $tempResult->TotalPayment += (float) ($temp->TotalPayment ?? 0);
+            $tempResult->TotalModifier += (float) ($temp->TotalModifier ?? 0);
+            $tempResult->TotalItemSales += (float) ($temp->TotalItemSales ?? 0);
+            $tempResult->TotalDiscountItem += (float) ($temp->TotalDiscountItem ?? 0);
+            $tempResult->TotalModifierSales += (float) ($temp->TotalModifierSales ?? 0);
 
-            // if identifer = MenuID do merge for the subdata
-            if($identifier == 'MenuID'){
-               foreach ($new->ModifierDetail as $modKey => $modValue) {
-                  $newModifier = true;
-                  foreach ($result[$oldIndex]->ModifierDetail as $key => $value) {
-                     if($value->ModifierName == $modValue->ModifierName){
-                        $newModifier = false;
+            // update ItemSalesDetail & PaymentDetail
+            $tempResult->ItemSalesDetail = $this->parseItemSalesDetail($tempResult->ItemSalesDetail, $temp->ItemSalesDetail);
+            $tempResult->PaymentDetail = $this->parsePaymentDetail($tempResult->PaymentDetail, $temp->PaymentDetail);
 
-                        break;
-                     }
-                  }
-
-                  // insert new modifier
-                  if($newModifier){
-                     $result[$oldIndex]->ModifierDetail[] = $modValue;
-                  }
-                  else{
-                     // update modifier
-                     $temp1 = $result[$oldIndex]->ModifierDetail[$key];
-                     $temp1->TotalSales = strval($temp1->TotalSales + $modValue->TotalSales);
-                     $temp1->QtyModifier = strval($temp1->QtyModifier + $modValue->QtyModifier);
-                     $result[$oldIndex]->ModifierDetail[$key] = $temp1;
-                  }
-               }
-            }
-               # code...
-            // $result[$oldIndex] = $temp;
+            $result->Data[$currDataIndex] = $tempResult;
          }
       }
       return $result;
+   }
+
+   /**
+    * parse sub data ItemSalesDetail
+    *
+    * @param array $curData
+    * @param array $temp
+    * @return array
+    */
+   private function parseItemSalesDetail($curData, $newData)
+   {
+      foreach ($newData as $newKey => $newValue) {
+         $menuFound = false;
+         foreach ($curData as $curKey => $curValue) {
+            if ($curValue->MenuID == $newValue->MenuID) {
+               $menuFound = true;
+               break;
+            }
+         }
+
+         if (!$menuFound) {
+            // add new menu
+            $temp = (object)[];
+            $temp->MenuID = (int) ($newValue->MenuID ?? null);
+            $temp->CategoryID = (int) ($newValue->CategoryID ?? null);
+            $temp->Qty = (float) ($newValue->Qty ?? 0);
+            $temp->AvgPrice = (float) ($newValue->AvgPrice ?? 0);
+            $temp->Discount = (float) ($newValue->Discount ?? 0);
+            $temp->SubTotal = (float) ($newValue->SubTotal ?? 0);
+            $temp->StartToFinish = (float) ($newValue->StartToFinish ?? 0);
+            $temp->ModifierDetail = $newValue->ModifierDetail ?? [];
+
+            $curData[] = $temp;
+         } else {
+            // update existing data
+            $temp = $curValue;
+            $temp->Qty += (float) ($newValue->Qty ?? 0);
+            $temp->Discount += (float) ($newValue->Discount ?? 0);
+            $temp->SubTotal += (float) ($newValue->SubTotal ?? 0);
+            if ($temp->Qty == 0) {
+               $temp->AvgPrice = 0;
+            } else {
+               $temp->AvgPrice = (float) ($temp->SubTotal / $temp->Qty);
+            }
+            $temp->StartToFinish += (float) ($newValue->StartToFinish ?? 0);
+            // update modifier
+            $temp->ModifierDetail = $this->parseModifierDetail($temp->ModifierDetail, $newValue->ModifierDetail);
+
+            $curData[$curKey] = $temp;
+         }
+      }
+
+      return $curData;
+   }
+
+   /**
+    * parse sub data ModifierDetail from ItemSalesDetail
+    *
+    * @param array $curData
+    * @param array $newData
+    * @return array
+    */
+   private function parseModifierDetail($curData, $newData)
+   {
+      foreach ($newData as $newKey => $newValue) {
+         $modifierFound = false;
+         foreach ($curData as $curKey => $curValue) {
+            if ($curValue->ModifierName == $newValue->ModifierName) {
+               $modifierFound = true;
+               break;
+            }
+         }
+         if (!$modifierFound) {
+            // add new menu
+            $temp = (object)[];
+            $temp->ModifierName = $newValue->ModifierName ?? null;
+            $temp->QtyModifier = (float) ($newValue->QtyModifier ?? 0);
+            $temp->TotalSales = (float) ($newValue->TotalSales ?? 0);
+
+            $curData[] = $temp;
+         } else {
+            // update existing data
+            $temp = $curValue;
+
+            $temp->QtyModifier += (float) ($newValue->QtyModifier ?? 0);
+            $temp->TotalSales += (float) ($newValue->TotalSales ?? 0);
+
+            $curData[$curKey] = $temp;
+         }
+      }
+
+      return $curData;
+   }
+
+   /**
+    * parse sub data PaymentDetail
+    *
+    * @param array $curData
+    * @param array $newData
+    * @return array
+    */
+   private function parsePaymentDetail($curData, $newData)
+   {
+      foreach ($newData as $newKey => $newValue) {
+         $paymentFound = false;
+         foreach ($curData as $curKey => $curValue) {
+            if ($curValue->PaymentMethodID == $newValue->PaymentMethodID) {
+               $paymentFound = true;
+               break;
+            }
+         }
+         if (!$paymentFound) {
+            // add new menu
+            $temp = (object)[];
+            $temp->PaymentMethodID = (int) ($newValue->PaymentMethodID ?? null);
+            $temp->Payment = (float) ($newValue->Payment ?? 0);
+            $temp->PaymentCount = (float) ($newValue->PaymentCount ?? 0);
+            $temp->StartToFinish = (float) ($newValue->StartToFinish ?? 0);
+
+            $curData[] = $temp;
+         } else {
+            // update existing data
+            $temp = $curValue;
+
+            $temp->Payment += (float) ($newValue->Payment ?? 0);
+            $temp->PaymentCount += (float) ($newValue->PaymentCount ?? 0);
+            $temp->StartToFinish += (float) ($newValue->StartToFinish ?? 0);
+
+            $curData[$curKey] = $temp;
+         }
+      }
+
+      return $curData;
    }
 }

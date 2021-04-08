@@ -33,7 +33,7 @@ Route::post('test', 'Transaction@test');
 // });
 
 Route::group(['prefix' => $version.'/transaction'], function () {
-    Route::post('fetch', 'Transaction@fetch');
+    Route::post('fetch-sales', 'Transaction@fetchSales');
     Route::post('fetch-ingredient', 'Transaction@fetchIngredient');
 });
 
