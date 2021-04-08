@@ -126,11 +126,12 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						$percentageValue = 100+$percentageTax;
 						$trans['GrandTotalAfterTax'] = $this->request['GrandTotal'];
 						$modTotal = 0;
-						foreach($this->request["Items"] as $item){
+						foreach($this->request["Items"] as &$item){
 							foreach($item["Modifiers"] as $mod){
 								$modTotal += $mod["Price"];
 							}
 							$item["Price"] -= $modTotal;
+							$item["ModifierTotal"] = $modTotal;
 						}
 					}
 					
@@ -143,15 +144,17 @@ class Transaction extends \Service\Http\Controllers\_Heart
 							"ItemName" => @$item["ItemName"],
 							"Price" => @$item["Price"],
 							"Qty" => @$item["Qty"],
-							"VAT" => @$item["VAT"]
+							"VAT" => @$item["VAT"],
+							"ModifierTotal" => @$item["ModifierTotal"]
 						];
 						if($this->_token_detail->KeyName == 'Grab Open Transaction'){
+							
 							if($percentageTax > 0){
 								$dtl['VAT'] = $dtl['Price'] - ((100/$percentageValue)*$dtl['Price']);
 								$dtl['Price'] = $dtl['Price'] - $dtl['VAT'];
 							}	
+							
 						}
-						
 						
 						if(!in_array(@$item["ItemID"], $menu_id)){
 							$this->add_error("Item", "Item", "Item ID {$item["ItemID"]} is Invalid");	
