@@ -282,7 +282,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 				
 			}
 			
-			$this->response->push_response[] = $res;
+			$this->response->push_response[] = isset($res) ? $res : [];
 		}
 		
 		$this->response->ExtTransactionID = $ext_trans_id;
