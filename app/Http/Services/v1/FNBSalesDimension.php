@@ -8,9 +8,15 @@ use Service\Http\Services\v1\FNBService;
 
 class FNBSalesDimension extends FNBDimension
 {
-   public function __construct()
+   protected $void = false;
+
+   /**
+    * @param boolean $void if true, get dimensin with void status
+    */
+   public function __construct($void = false)
    {
       parent::__construct();
+      $this->void = $void;
    }
 
    /**
@@ -35,7 +41,8 @@ class FNBSalesDimension extends FNBDimension
       }
 
       // get all brand dimension within date range
-      $brandDim = $this->getBrandDimension($brandId, ['fnb_sales'], $date);
+      $dimName = $this->void == true ? ['fnb_void_sales'] : ['fnb_sales'];
+      $brandDim = $this->getBrandDimension($brandId, $dimName, $date);
       if (empty($brandDim)) {
          return false;
       }

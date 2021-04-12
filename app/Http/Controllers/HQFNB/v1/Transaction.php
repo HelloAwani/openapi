@@ -100,6 +100,54 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		return response()->json($responseData);
 	}
 
+	/**
+	 * fetch sales with void status
+	 *
+	 * @return array
+	 */
+	public function fetchVoidSales()
+	{
+		$this->validate_request();
+		$this->db  = 'res';
+
+		$rules = [
+			'DateStart' => 'required|date_format:Y-m-d',
+			'DateEnd' => 'required|date_format:Y-m-d',
+		];
+		//standar validator
+		$this->validator($rules);
+
+		$this->render();
+
+		$fnbVoidSalesDimension = new FNBSalesDimension(true);
+		$tokenData = $this->_token_detail;
+		$request = $this->request;
+
+		// set default response
+		$this->response->Data = [];
+
+		$dateRange = [
+			'start' => $request['DateStart'],
+			'end' => $request['DateEnd']
+		];
+		// get dimension
+		$result = $fnbVoidSalesDimension->getDimension($tokenData, $dateRange);
+
+		if(!empty($result)){
+			$responseData = $result;
+		}
+		else $responseData = [];
+
+		$this->response->Data = $responseData;
+
+		return response()->json($responseData);
+	}
+
+	/**
+	 * fetch ingredient dimension
+	 *
+	 * @return array
+	 */
 	public function fetchIngredient()
 	{
 		$this->validate_request();
@@ -135,8 +183,5 @@ class Transaction extends \Service\Http\Controllers\_Heart
 		$this->response->Data = $responseData;
 
 		return response()->json($responseData);
-
-		// $this->reset_db();
-		// $this->render(true);
 	}
 }
