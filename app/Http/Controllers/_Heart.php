@@ -269,6 +269,9 @@ class _Heart
         header("Access-Control-Expose-Headers: Access-Control-Allow-Origin");
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
         header("Content-Type: application/json");
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: POST');
+        header('Access-Control-Max-Age: 1000');
 
         //rearrange for aesthetic
         $json = array();
@@ -772,7 +775,9 @@ class _Heart
         }
         $this->render();
 
-        $etoken = @$this->query('SELECT * FROM "Token" where "Token" = :token and "DisabledDate" is null 
+        $etoken = @$this->query('SELECT "Token".*,api."KeyName" FROM "Token"
+        left join "APICredential" api on "Token"."APICredentialID" = api."APICredentialID"
+        where "Token" = :token and "Token"."DisabledDate" is null 
             and :date <= "ExpiryDate"
         ',
             array(
@@ -807,7 +812,7 @@ class _Heart
         $this->reset_db();
         $this->outlet_info = $branch;
         if((@$branch->Active)!='1'  
-            && !in_array($this->enforce_product, ["HQF"])
+            && !in_array($this->enforce_product, ["HQF", "OpenTransaction"])
             ){
             $this->add_error("Authorization", "Token", "Authorization has ecountered a failure (x5001)");   
         }
@@ -874,7 +879,7 @@ class _Heart
             foreach($dataarray as $k=>&$v){
                 $id = $v->{$key};
                 unset($v->{$key});
-                $dataset[$id]->{$name}  []= $v;
+                @$dataset[$id]->{$name}  []= $v;
             }
         }else{
             $segments = explode('.', $child);
