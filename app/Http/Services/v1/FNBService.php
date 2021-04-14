@@ -19,7 +19,7 @@ class FNBService
     */
    public function getBranch($brandId, $limit = 0)
    {
-      $query = DB::connection('res')
+      $query = DB::connection('RES')
          ->table('Branch')
          ->select(['BranchID', 'BranchName', 'Address'])
          ->where('RestaurantID', '=', $brandId)

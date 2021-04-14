@@ -5,6 +5,9 @@ namespace Service\Http\Services\v1;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * NOT USED
+ */
 class HBDimension
 {
    /**

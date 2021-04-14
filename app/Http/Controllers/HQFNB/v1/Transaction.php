@@ -27,7 +27,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 	public function fetch()
 	{
 		$this->validate_request();
-		$this->db  = 'res';
+		$this->db  = 'RES';
 
 		$rules = [
 			'DateStart' => 'required|date_format:Y-m-d',
@@ -65,7 +65,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 	public function fetchSales()
 	{
 		$this->validate_request();
-		$this->db  = 'res';
+		$this->db  = 'RES';
 
 		$rules = [
 			'DateStart' => 'required|date_format:Y-m-d',
@@ -108,7 +108,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 	public function fetchVoidSales()
 	{
 		$this->validate_request();
-		$this->db  = 'res';
+		$this->db  = 'RES';
 
 		$rules = [
 			'DateStart' => 'required|date_format:Y-m-d',
@@ -151,7 +151,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 	public function fetchIngredient()
 	{
 		$this->validate_request();
-		$this->db = 'res';
+		$this->db = 'RES';
 
 		$rules = [
 			'DateStart' => 'required|date_format:Y-m-d',

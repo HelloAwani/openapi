@@ -59,6 +59,20 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        // reporting
+        'rep' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST_REP'),
+            'port' => env('DB_PORT_REP'),
+            'database' => env('DB_DATABASE_REP'),
+            'username' => env('DB_USERNAME_REP'),
+            'password' => env('DB_PASSWORD_REP'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+        ],
+        
         'integration' => [
             'driver' => 'pgsql',
             'host' => env('INTEGRATION_DB_HOST'),
