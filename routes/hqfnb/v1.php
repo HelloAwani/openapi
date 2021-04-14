@@ -13,8 +13,6 @@
 
 $version = 'v1';
 
-Route::post('test', 'Transaction@test');
-
 // Route::group(['prefix' => $version.'/master'], function () {
 //     Route::post('categories', 'Master@categories');
 //     Route::post('items', 'Master@items');
