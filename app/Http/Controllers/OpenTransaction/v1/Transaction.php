@@ -76,7 +76,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						"ProductID" => @$this->MappingMeta->SubProduct,
 						"BranchID" => @$this->_token_detail->BranchID,
 						"MainID" => @$this->_token_detail->MainID,
-						"GrandTotalAfterTax" => @$this->request["GrandTotal"] + @$this->Request["VAT"]
+						"GrandTotalAfterTax" => @$this->request["GrandTotal"]
 					];
 
 					$this->db  = $this->MappingMeta->SubProduct;
@@ -123,7 +123,12 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						// else
 						// 	$percentageTax = 0;
 						
+						
 						$percentageValue = 100+$percentageTax;
+
+						$trans['VAT'] = $trans['GrandTotal'] - ((100/$percentageValue)*$trans['GrandTotal']);
+						$trans['GrandTotal'] = $trans['GrandTotal'] -= $trans['VAT'];
+
 						$trans['GrandTotalAfterTax'] = $this->request['GrandTotal'];
 						$modTotal = 0;
 						foreach($this->request["Items"] as &$item){
