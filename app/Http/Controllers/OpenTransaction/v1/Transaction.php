@@ -116,12 +116,12 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 					$this->start();
 					if($this->_token_detail->KeyName == 'Grab Open Transaction'){
-						$trans['GrandTotal'] -= $trans['VAT'];
-						if($trans['VAT'] > 0 || $trans['VAT'] != null)
-							$percentageTax = $trans['VAT'] / $trans['GrandTotal'] * 100;
-						else
-							$percentageTax = 0;
-						
+						$percentageTax = $this->request['VATPercentage'];
+						// $trans['GrandTotal'] -= $trans['VAT'];
+						// if($trans['VAT'] > 0 || $trans['VAT'] != null)
+						// 	$percentageTax = $trans['VAT'] / $trans['GrandTotal'] * 100;
+						// else
+						// 	$percentageTax = 0;
 						
 						$percentageValue = 100+$percentageTax;
 						$trans['GrandTotalAfterTax'] = $this->request['GrandTotal'];
