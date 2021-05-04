@@ -131,7 +131,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 
 						$trans['GrandTotalAfterTax'] = $this->request['GrandTotal'];
 						$modTotal = 0;
-						foreach($this->request["Items"] as &$item){
+						foreach($this->request["Items"] as $item){
 							foreach($item["Modifiers"] as $mod){
 								$modTotal += $mod["Price"];
 							}
