@@ -176,7 +176,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 									"ModifierID" => @$mod["ModifierID"],
 									"ModifierName" => @$mod["ModifierName"],
 									"Price" => @$mod["Price"],
-									"VAT" => 0
+									"VAT" => @$mod["VAT"]
 								];
 								if($this->_token_detail->KeyName == 'Grab Open Transaction'){
 									if($percentageTax > 0){
