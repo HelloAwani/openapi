@@ -76,7 +76,9 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						"ProductID" => @$this->MappingMeta->SubProduct,
 						"BranchID" => @$this->_token_detail->BranchID,
 						"MainID" => @$this->_token_detail->MainID,
-						"GrandTotalAfterTax" => @$this->request["GrandTotal"]
+						"GrandTotalAfterTax" => @$this->request["GrandTotal"],
+						"Discount" => @$this->request["Discount"],
+						"DiscountType" => @$this->request["DiscountType"],
 					];
 
 					$this->db  = $this->MappingMeta->SubProduct;
@@ -129,7 +131,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						$trans['VAT'] = $trans['GrandTotal'] - ((100/$percentageValue)*$trans['GrandTotal']);
 						$trans['GrandTotal'] = $trans['GrandTotal'] -= $trans['VAT'];
 
-						$trans['GrandTotalAfterTax'] = $this->request['GrandTotal'];
+						$trans['GrandTotalAfterTax'] = $this->request['GrandTotal'] - $this->coalesce(@$this->request['Discount'],0);
 						$modTotal = 0;
 						foreach($this->request["Items"] as $item){
 							foreach($item["Modifiers"] as $mod){
@@ -573,6 +575,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 							"MainID"=> $this->request['MainID']
 						]
 					);
+				print_r($dbtoken);die();
 				foreach($dbtoken as $t){
 					
 					if($t->Plattform=="iOS"){
@@ -637,10 +640,10 @@ class Transaction extends \Service\Http\Controllers\_Heart
 							// 	'body' => 'You\'ve got a new order from Grab food at ud'.$now,
 							// ])
 							->send();
-						
+							$this->response->push_response[] = $res;	
 					}
 					
-					$this->response->push_response[] = $res;
+					
 				}
 				
 				$this->response->ExtTransactionID = $this->request["ExtTransactionID"];
