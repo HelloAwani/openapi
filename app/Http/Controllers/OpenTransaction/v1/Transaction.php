@@ -152,7 +152,8 @@ class Transaction extends \Service\Http\Controllers\_Heart
 							"Price" => @$item["Price"],
 							"Qty" => @$item["Qty"],
 							"VAT" => @$item["VAT"],
-							"ModifierTotal" => @$item["ModifierTotal"]
+							"ModifierTotal" => @$item["ModifierTotal"],
+							"Notes" => @$item["Notes"]
 						];
 						if($this->_token_detail->KeyName == 'Grab Open Transaction'){
 							
