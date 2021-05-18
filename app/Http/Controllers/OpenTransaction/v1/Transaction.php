@@ -576,7 +576,6 @@ class Transaction extends \Service\Http\Controllers\_Heart
 							"MainID"=> $this->request['MainID']
 						]
 					);
-				print_r($dbtoken);die();
 				foreach($dbtoken as $t){
 					
 					if($t->Plattform=="iOS"){
