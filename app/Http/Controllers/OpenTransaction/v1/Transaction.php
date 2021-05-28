@@ -276,7 +276,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 				$res = fcm()
 					->to($recipients) // $recipients must an array
 					->priority('high')
-					->timeToLive(0)
+					->timeToLive(30*3600*1000)
 					// ->data([
 					// 	'title' => 'ExtTransactionID',
 					// 	'body' => $ext_trans_id,
@@ -625,7 +625,7 @@ class Transaction extends \Service\Http\Controllers\_Heart
 						$res = fcm()
 							->to($recipients) // $recipients must an array
 							->priority('high')
-							->timeToLive(0)
+							->timeToLive(30*3600*1000)
 							// ->data([
 							// 	'title' => 'ExtTransactionID',
 							// 	'body' => $ext_trans_id,
